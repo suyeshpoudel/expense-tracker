@@ -9,10 +9,11 @@ class TransactionAdmin(admin.ModelAdmin):
         "date",
         "user",
         "transaction_type",
+        "category",
         "amount",
         "title",
     )
-    list_filter = ("transaction_type", "date")
-    search_fields = ("title", "notes", "user__username")
+    list_filter = ("transaction_type", "category", "date")
+    search_fields = ("title", "notes", "user__username", "category__name")
     date_hierarchy = "date"
-    list_select_related = ("user",)
+    list_select_related = ("user", "category")
