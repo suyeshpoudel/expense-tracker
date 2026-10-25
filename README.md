@@ -1,8 +1,8 @@
 # Expense Tracker
 
 A server-rendered personal expense tracker built with Django. The project is
-being developed incrementally; the current state is a working project scaffold
-with a home page.
+being developed incrementally; the current state includes user accounts and a
+login-protected dashboard with empty states.
 
 ## Stack
 
@@ -39,6 +39,17 @@ can be provided through the environment (see `.env.example`):
 The settings module reads real environment variables; it does not load `.env`
 automatically. Export the values in your shell or use your process manager.
 
+## Routes
+
+| URL | Purpose | Access |
+| --- | --- | --- |
+| `/` | Home page | Public |
+| `/accounts/register/` | Create an account | Public |
+| `/accounts/login/` | Log in | Public |
+| `/accounts/logout/` | Log out (POST only) | Any |
+| `/dashboard/` | Personal dashboard | Logged-in users |
+| `/admin/` | Django admin | Staff users |
+
 ## Tests and checks
 
 ```bash
@@ -50,8 +61,9 @@ python manage.py test
 
 ```
 config/                 Project settings and root URL configuration
-apps/core/              Home page (dashboard/auth will live here)
-templates/              Shared templates (base.html, core/home.html)
+apps/accounts/          Registration, login and logout
+apps/core/              Home page and dashboard
+templates/              Shared, account and dashboard templates
 static/css/             Application styles
 static/vendor/          Vendored Bootstrap CSS/JS and license
 requirements.txt        Python dependencies
@@ -67,7 +79,7 @@ Project conventions:
 ## Milestones
 
 - [x] Milestone 0 - Project planning and setup
-- [ ] Milestone 1 - Authentication and personal dashboard
+- [x] Milestone 1 - Authentication and personal dashboard
 - [ ] Milestone 2 - Expense and income transactions
 - [ ] Milestone 3 - Category management
 - [ ] Milestone 4 - Dashboard calculations and reports
@@ -86,3 +98,10 @@ Project conventions:
   offline and does not depend on a CDN at runtime.
 - SQLite is used for local development; production database configuration will
   be addressed in Milestone 7.
+- Registration uses Django's `UserCreationForm`, with an optional email field.
+  A successful registration logs the user in and redirects to the dashboard.
+- Logout is a POST request from the navigation bar, protected by CSRF.
+- The dashboard shows em dashes and empty states rather than zero values until
+  transaction data exists.
+- Registration is open to anyone who can reach the site. Restricting or closing
+  registration should be considered before any public deployment.
