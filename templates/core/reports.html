@@ -9,7 +9,18 @@
     <p class="app-muted mb-0">Review spending and cash flow over any date range. Both dates are included.</p>
 </div>
 
-<form method="get" class="card app-card mb-4" novalidate>
+<nav class="d-flex flex-wrap align-items-center gap-2 mb-3" aria-label="Quick date ranges">
+    <span class="small app-muted">Quick ranges:</span>
+    {% for preset in report_presets %}
+        <a class="btn btn-sm {% if show_report and preset.date_from == date_from and preset.date_to == date_to %}btn-success{% else %}btn-outline-secondary{% endif %}"
+           href="?date_from={{ preset.date_from|date:'Y-m-d' }}&amp;date_to={{ preset.date_to|date:'Y-m-d' }}"
+           {% if show_report and preset.date_from == date_from and preset.date_to == date_to %}aria-current="true"{% endif %}>
+            {{ preset.label }}
+        </a>
+    {% endfor %}
+</nav>
+
+<form method="get" class="card app-card mb-4" aria-label="Report date range" novalidate>
     <div class="card-body">
         {% if form.non_field_errors %}
             <div class="alert alert-danger" role="alert">

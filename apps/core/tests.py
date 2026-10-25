@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, timedelta
 from decimal import Decimal
 
 from django.contrib.auth.models import User
@@ -330,6 +330,92 @@ class ReportsTests(ReportViewTestCase):
         self.assertContains(response, "NPR 0.00")
         self.assertContains(response, "No expenses recorded")
         self.assertContains(response, "No spending in this period")
+        self.assertContains(response, "Quick ranges:")
+        self.assertContains(response, 'aria-current="true"')
+
+    def test_report_includes_quick_range_presets(self):
+        today = timezone.localdate()
+        period_from, period_to = month_bounds(today)
+        previous_from = shift_month(period_from, -1)
+        previous_to = month_bounds(previous_from)[1]
+
+        response = self.client.get(reverse("core:reports"))
+
+        presets = response.context["report_presets"]
+        self.assertEqual(
+            [preset["label"] for preset in presets],
+            ["This month", "Last month", "Last 30 days", "Year to date"],
+        )
+        self.assertEqual(
+            presets[0]["date_from"],
+            period_from,
+        )
+        self.assertEqual(presets[0]["date_to"], period_to)
+        self.assertEqual(presets[1]["date_from"], previous_from)
+        self.assertEqual(presets[1]["date_to"], previous_to)
+        self.assertEqual(
+            presets[2]["date_from"],
+            today - timedelta(days=29),
+        )
+        self.assertEqual(presets[2]["date_to"], today)
+        self.assertEqual(presets[3]["date_from"], today.replace(month=1, day=1))
+        self.assertEqual(presets[3]["date_to"], today)
+
+    def test_last_month_preset_filters_the_report(self):
+        period_from, _ = month_bounds(timezone.localdate())
+        previous_from = shift_month(period_from, -1)
+        previous_to = month_bounds(previous_from)[1]
+        self.create_transaction(
+            title="Last month expense",
+            amount=Decimal("40.00"),
+            date=previous_from,
+        )
+        self.create_transaction(
+            title="This month expense",
+            amount=Decimal("90.00"),
+            date=period_from,
+        )
+
+        response = self.client.get(
+            reverse("core:reports"),
+            {
+                "date_from": previous_from.isoformat(),
+                "date_to": previous_to.isoformat(),
+            },
+        )
+
+        self.assertEqual(
+            response.context["total_expenses"],
+            Decimal("40.00"),
+        )
+
+    def test_quick_range_preset_is_active_only_for_matching_dates(self):
+        previous_from = shift_month(month_bounds(timezone.localdate())[0], -1)
+        previous_to = month_bounds(previous_from)[1]
+
+        response = self.client.get(
+            reverse("core:reports"),
+            {
+                "date_from": previous_from.isoformat(),
+                "date_to": previous_to.isoformat(),
+            },
+        )
+
+        self.assertEqual(
+            response.content.decode().count('aria-current="true"'),
+            1,
+        )
+
+    def test_invalid_report_has_no_active_quick_range(self):
+        response = self.client.get(
+            reverse("core:reports"),
+            {
+                "date_from": "2026-02-01",
+                "date_to": "2026-01-01",
+            },
+        )
+
+        self.assertNotContains(response, 'aria-current="true"')
 
     def test_custom_range_filters_and_calculates_report(self):
         self.create_transaction(

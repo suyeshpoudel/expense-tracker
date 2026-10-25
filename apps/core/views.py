@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
@@ -27,6 +29,35 @@ def _chart_payload(labels, values):
         "values": [float(value) for value in values],
         "currency": settings.CURRENCY_CODE,
     }
+
+
+def _report_presets(today):
+    current_from, current_to = month_bounds(today)
+    last_from = shift_month(current_from, -1)
+    last_to = month_bounds(last_from)[1]
+
+    return [
+        {
+            "label": "This month",
+            "date_from": current_from,
+            "date_to": current_to,
+        },
+        {
+            "label": "Last month",
+            "date_from": last_from,
+            "date_to": last_to,
+        },
+        {
+            "label": "Last 30 days",
+            "date_from": today - timedelta(days=29),
+            "date_to": today,
+        },
+        {
+            "label": "Year to date",
+            "date_from": today.replace(month=1, day=1),
+            "date_to": today,
+        },
+    ]
 
 
 def _format_period(date_from, date_to):
@@ -133,6 +164,7 @@ def reports(request):
         "trend_has_data": False,
         "trend_chart_data": _chart_payload([], []),
         "trend_label": _format_period(date_from, date_to),
+        "report_presets": _report_presets(today),
     }
 
     if show_report:
