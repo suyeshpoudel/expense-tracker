@@ -51,9 +51,47 @@
     <div class="col-sm-6 col-xl-3">
         <div class="card h-100 app-card">
             <div class="card-body">
-                <p class="small text-uppercase app-muted mb-2">Remaining budget</p>
-                <p class="fs-3 fw-semibold mb-1">&mdash;</p>
-                <p class="small app-muted mb-0">No budget configured yet.</p>
+                {% if budget_status %}
+                    <p class="small text-uppercase app-muted mb-2">
+                        {% if budget_status.is_over_budget %}Over budget{% else %}Remaining budget{% endif %}
+                    </p>
+                    <p class="fs-3 fw-semibold mb-1 {% if budget_status.is_over_budget %}text-danger{% elif budget_status.is_near_limit %}text-warning-emphasis{% endif %}">
+                        {% if budget_status.is_over_budget %}
+                            {{ CURRENCY_CODE }} {{ budget_status.over_by|floatformat:2 }}
+                        {% else %}
+                            {{ CURRENCY_CODE }} {{ budget_status.remaining|floatformat:2 }}
+                        {% endif %}
+                    </p>
+                    <p class="small app-muted mb-2">
+                        of {{ CURRENCY_CODE }} {{ budget_status.budget.amount|floatformat:2 }} budget for {{ month_label }}
+                    </p>
+                    <div class="progress" style="height: 6px;"
+                         role="progressbar"
+                         aria-label="Monthly budget used"
+                         aria-valuenow="{{ budget_status.bar_width|floatformat:1 }}"
+                         aria-valuemin="0" aria-valuemax="100">
+                        <div class="progress-bar {% if budget_status.is_over_budget %}bg-danger{% elif budget_status.is_near_limit %}bg-warning{% else %}bg-success{% endif %}"
+                             style="width: {{ budget_status.bar_width|floatformat:1 }}%"></div>
+                    </div>
+                    <div class="d-flex flex-wrap justify-content-between gap-1 small mt-1">
+                        <span class="app-muted">{{ budget_status.percentage|floatformat:1 }}% used</span>
+                        {% if budget_status.is_over_budget %}
+                            <span class="text-danger">Over budget</span>
+                        {% elif budget_status.is_near_limit %}
+                            <span class="text-warning-emphasis">Near limit</span>
+                        {% else %}
+                            <span class="text-success">On track</span>
+                        {% endif %}
+                    </div>
+                    <a class="small text-decoration-none d-inline-block mt-2"
+                       href="{% url 'budgets:edit' budget_status.budget.pk %}">Adjust budget</a>
+                {% else %}
+                    <p class="small text-uppercase app-muted mb-2">Remaining budget</p>
+                    <p class="fs-3 fw-semibold mb-1">&mdash;</p>
+                    <p class="small app-muted mb-0">No budget configured yet.</p>
+                    <a class="small text-decoration-none d-inline-block mt-2"
+                       href="{% url 'budgets:create' %}">Set a monthly budget</a>
+                {% endif %}
             </div>
         </div>
     </div>

@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block title %}Budgets · Expense Tracker{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+    <div>
+        <h1 class="h3 mb-1">Monthly budgets</h1>
+        <p class="app-muted mb-0">Set a spending limit for a month and track how much remains.</p>
+    </div>
+    <a class="btn btn-success" href="{% url 'budgets:create' %}">Set monthly budget</a>
+</div>
+
+{% if budget_summaries %}
+    <div class="card app-card">
+        <div class="table-responsive">
+            <table class="table align-middle mb-0">
+                <caption class="visually-hidden">Your monthly budgets and current spending</caption>
+                <thead>
+                    <tr>
+                        <th scope="col">Month</th>
+                        <th scope="col" class="text-end">Budget</th>
+                        <th scope="col" class="text-end">Spent</th>
+                        <th scope="col" class="text-end">Remaining</th>
+                        <th scope="col">Used</th>
+                        <th scope="col" class="text-end"><span class="visually-hidden">Actions</span></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for summary in budget_summaries %}
+                        <tr>
+                            <th scope="row" class="fw-semibold text-nowrap">
+                                {{ summary.budget.month|date:"F Y" }}
+                                {% if summary.budget.month == current_month %}
+                                    <span class="badge text-bg-secondary ms-1">Current</span>
+                                {% endif %}
+                            </th>
+                            <td class="text-end text-nowrap">
+                                {{ CURRENCY_CODE }} {{ summary.budget.amount|floatformat:2 }}
+                            </td>
+                            <td class="text-end text-nowrap">
+                                {{ CURRENCY_CODE }} {{ summary.spent|floatformat:2 }}
+                            </td>
+                            <td class="text-end text-nowrap {% if summary.is_over_budget %}text-danger{% endif %}">
+                                {% if summary.is_over_budget %}
+                                    {{ CURRENCY_CODE }} {{ summary.over_by|floatformat:2 }} over
+                                {% else %}
+                                    {{ CURRENCY_CODE }} {{ summary.remaining|floatformat:2 }}
+                                {% endif %}
+                            </td>
+                            <td style="min-width: 10rem;">
+                                <div class="d-flex flex-wrap justify-content-between align-items-center gap-1 mb-1">
+                                    <span class="small">{{ summary.percentage|floatformat:1 }}%</span>
+                                    {% if summary.is_over_budget %}
+                                        <span class="badge text-bg-danger">Over budget</span>
+                                    {% elif summary.is_near_limit %}
+                                        <span class="badge text-bg-warning">Near limit</span>
+                                    {% else %}
+                                        <span class="badge text-bg-success">On track</span>
+                                    {% endif %}
+                                </div>
+                                <div class="progress" style="height: 6px;"
+                                     role="progressbar"
+                                     aria-label="{{ summary.budget.month|date:'F Y' }} budget used"
+                                     aria-valuenow="{{ summary.bar_width|floatformat:1 }}"
+                                     aria-valuemin="0" aria-valuemax="100">
+                                    <div class="progress-bar {% if summary.is_over_budget %}bg-danger{% elif summary.is_near_limit %}bg-warning{% else %}bg-success{% endif %}"
+                                         style="width: {{ summary.bar_width|floatformat:1 }}%"></div>
+                                </div>
+                            </td>
+                            <td class="text-end text-nowrap">
+                                <a class="btn btn-sm btn-outline-secondary" href="{% url 'budgets:edit' summary.budget.pk %}">Edit</a>
+                                <a class="btn btn-sm btn-outline-danger" href="{% url 'budgets:delete' summary.budget.pk %}">Delete</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <p class="small app-muted mt-3 mb-0">
+        Budget usage counts expense transactions only. Income does not increase the amount available.
+    </p>
+{% else %}
+    <div class="card app-card">
+        <div class="card-body text-center py-5">
+            <p class="fw-semibold mb-1">No monthly budgets yet</p>
+            <p class="small app-muted mb-3">Set a budget to compare your spending with a monthly limit.</p>
+            <a class="btn btn-success" href="{% url 'budgets:create' %}">Set your first budget</a>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}

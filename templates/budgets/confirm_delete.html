@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}Delete budget · Expense Tracker{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <div class="card app-card shadow-sm border-danger">
+            <div class="card-body p-4">
+                <h1 class="h3 mb-2">Delete budget?</h1>
+
+                <div class="border rounded-3 p-3 my-4">
+                    <p class="fw-semibold mb-1">{{ budget.month|date:"F Y" }}</p>
+                    <p class="small app-muted mb-0">{{ CURRENCY_CODE }} {{ budget.amount|floatformat:2 }} monthly budget</p>
+                </div>
+
+                <p class="app-muted">Transactions from this month will not be deleted. Only the budget is removed.</p>
+                <form method="post" class="d-flex flex-wrap gap-2">
+                    {% csrf_token %}
+                    <button class="btn btn-danger" type="submit">Delete budget</button>
+                    <a class="btn btn-outline-secondary" href="{% url 'budgets:list' %}">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

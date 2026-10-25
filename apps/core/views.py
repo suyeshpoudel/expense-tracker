@@ -3,6 +3,9 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 from django.utils import timezone
 
+from apps.budgets.models import MonthlyBudget
+from apps.budgets.services import summarize_budget
+
 from .forms import ReportFilterForm
 from .services import (
     ZERO,
@@ -51,6 +54,13 @@ def dashboard(request):
     totals = transaction_totals(request.user, period_from, period_to)
     breakdown = expense_breakdown(request.user, period_from, period_to)
     trend = monthly_expense_trend(request.user, trend_from, period_to)
+    budget = MonthlyBudget.objects.filter(
+        user=request.user,
+        month=period_from,
+    ).first()
+    budget_status = (
+        summarize_budget(budget, totals["expenses"]) if budget else None
+    )
     recent_transactions = request.user.transactions.select_related(
         "category"
     )[:5]
@@ -77,6 +87,8 @@ def dashboard(request):
                 [item["total"] for item in trend],
             ),
             "trend_label": "Last 6 months",
+            "budget": budget,
+            "budget_status": budget_status,
             "recent_transactions": recent_transactions,
         },
     )

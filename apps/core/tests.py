@@ -45,6 +45,7 @@ class HomePageTests(TestCase):
 
         self.assertContains(response, reverse("core:dashboard"))
         self.assertContains(response, reverse("core:reports"))
+        self.assertContains(response, reverse("budgets:list"))
         self.assertContains(response, reverse("accounts:logout"))
         self.assertContains(response, "Log out")
 

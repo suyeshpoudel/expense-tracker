@@ -12,7 +12,7 @@
 <body class="d-flex flex-column min-vh-100">
     <a class="visually-hidden-focusable p-2 bg-white" href="#main-content">Skip to main content</a>
 
-    <nav class="navbar navbar-expand-md navbar-dark app-navbar" aria-label="Main navigation">
+    <nav class="navbar navbar-expand-lg navbar-dark app-navbar" aria-label="Main navigation">
         <div class="container">
             <a class="navbar-brand fw-semibold" href="{% url 'core:home' %}">
                 Expense Tracker
@@ -34,6 +34,11 @@
                             <a class="nav-link{% if request.resolver_match.url_name == 'dashboard' %} active{% endif %}"
                                {% if request.resolver_match.url_name == 'dashboard' %}aria-current="page"{% endif %}
                                href="{% url 'core:dashboard' %}">Dashboard</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link{% if request.resolver_match.namespace == 'budgets' %} active{% endif %}"
+                               {% if request.resolver_match.namespace == 'budgets' %}aria-current="page"{% endif %}
+                               href="{% url 'budgets:list' %}">Budgets</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link{% if request.resolver_match.url_name == 'reports' %} active{% endif %}"
