@@ -168,6 +168,3 @@ Project conventions:
 - Business rules belong in Python (models, forms, services), not templates.
 - Monetary values use `DecimalField`, never floating point.
 - User-owned data is always scoped to `request.user`.
-
-, the production security check, static collection, and WSGI
-  configuration.
