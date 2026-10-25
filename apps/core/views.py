@@ -9,8 +9,13 @@ def home(request):
 
 @login_required
 def dashboard(request):
+    recent_transactions = request.user.transactions.all()[:5]
+
     return render(
         request,
         "core/dashboard.html",
-        {"month_label": timezone.localdate().strftime("%B %Y")},
+        {
+            "month_label": timezone.localdate().strftime("%B %Y"),
+            "recent_transactions": recent_transactions,
+        },
     )

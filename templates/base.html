@@ -36,6 +36,11 @@
                                href="{% url 'core:dashboard' %}">Dashboard</a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link{% if request.resolver_match.namespace == 'transactions' %} active{% endif %}"
+                               {% if request.resolver_match.namespace == 'transactions' %}aria-current="page"{% endif %}
+                               href="{% url 'transactions:list' %}">Transactions</a>
+                        </li>
+                        <li class="nav-item">
                             <span class="navbar-text small text-white-50 px-md-2">{{ user.get_username }}</span>
                         </li>
                         <li class="nav-item">

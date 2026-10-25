@@ -1,6 +1,11 @@
+from decimal import Decimal
+
 from django.contrib.auth.models import User
 from django.test import TestCase
 from django.urls import reverse
+from django.utils import timezone
+
+from apps.transactions.models import Transaction
 
 
 class HomePageTests(TestCase):
@@ -61,8 +66,7 @@ class DashboardTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "core/dashboard.html")
-        self.assertContains(response, "No expenses recorded yet.")
-        self.assertContains(response, "No income recorded yet.")
+        self.assertContains(response, "Monthly totals are not available yet.")
         self.assertContains(response, "No budget configured yet.")
         self.assertContains(response, "No transactions recorded yet")
 
@@ -73,3 +77,29 @@ class DashboardTests(TestCase):
 
         self.assertNotContains(response, "NPR")
         self.assertNotContains(response, "0.00")
+
+    def test_dashboard_shows_only_the_users_recent_transactions(self):
+        other_user = User.objects.create_user(
+            username="other", password="Str0ng-Passw0rd!23"
+        )
+        Transaction.objects.create(
+            user=self.user,
+            transaction_type=Transaction.Type.EXPENSE,
+            amount=Decimal("50.00"),
+            title="My recent expense",
+            date=timezone.localdate(),
+        )
+        Transaction.objects.create(
+            user=other_user,
+            transaction_type=Transaction.Type.INCOME,
+            amount=Decimal("900.00"),
+            title="Other user income",
+            date=timezone.localdate(),
+        )
+        self.client.force_login(self.user)
+
+        response = self.client.get(reverse("core:dashboard"))
+
+        self.assertContains(response, "My recent expense")
+        self.assertContains(response, "NPR")
+        self.assertNotContains(response, "Other user income")
