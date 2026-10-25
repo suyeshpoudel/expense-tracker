@@ -690,6 +690,191 @@ class TransactionFilterTests(TransactionViewTestCase):
             Decimal("0.30"),
         )
 
+    def test_search_matches_titles_case_insensitively(self):
+        response = self.client.get(self.list_url, {"q": "freeLANCE"})
+
+        self.assertContains(response, "Freelance payment")
+        self.assertNotContains(response, "Groceries")
+        self.assertNotContains(response, "Old expense")
+        self.assertEqual(
+            response.context["total_income"],
+            Decimal("500.00"),
+        )
+        self.assertTrue(response.context["has_filters"])
+        self.assertContains(response, "1 matching transaction")
+
+    def test_search_matches_notes(self):
+        self.create_transaction(
+            title="Team lunch",
+            notes="Shared with a client.",
+            amount=Decimal("30.00"),
+        )
+
+        response = self.client.get(self.list_url, {"q": "client"})
+
+        self.assertContains(response, "Team lunch")
+        self.assertNotContains(response, "Groceries")
+
+    def test_search_matches_category_names(self):
+        transport = Category.objects.create(
+            user=self.user,
+            category_type=Category.Type.EXPENSE,
+            name="Transportation",
+        )
+        self.create_transaction(
+            title="Bus fare",
+            category=transport,
+            amount=Decimal("15.00"),
+        )
+
+        response = self.client.get(self.list_url, {"q": "transport"})
+
+        self.assertContains(response, "Bus fare")
+        self.assertNotContains(response, "Groceries")
+
+    def test_search_is_scoped_to_the_user(self):
+        response = self.client.get(self.list_url, {"q": "other user"})
+
+        self.assertEqual(response.context["page_obj"].paginator.count, 0)
+        self.assertNotContains(response, "Other user expense")
+
+    def test_search_is_combined_with_other_filters(self):
+        response = self.client.get(
+            self.list_url,
+            {
+                "q": "payment",
+                "type": Transaction.Type.EXPENSE,
+            },
+        )
+
+        self.assertEqual(response.context["page_obj"].paginator.count, 0)
+        self.assertContains(response, "No matching transactions")
+
+    def test_blank_search_is_not_an_active_filter(self):
+        response = self.client.get(self.list_url, {"q": "   "})
+
+        self.assertFalse(response.context["has_filters"])
+        self.assertEqual(response.context["page_obj"].paginator.count, 3)
+
+    def test_amount_range_is_inclusive(self):
+        response = self.client.get(
+            self.list_url,
+            {"amount_min": "25.50", "amount_max": "100.00"},
+        )
+
+        self.assertContains(response, "Groceries")
+        self.assertContains(response, "Old expense")
+        self.assertNotContains(response, "Freelance payment")
+        self.assertEqual(
+            response.context["total_expenses"],
+            Decimal("125.50"),
+        )
+        self.assertEqual(
+            response.context["total_income"],
+            Decimal("0.00"),
+        )
+
+    def test_single_amount_boundary(self):
+        response = self.client.get(
+            self.list_url,
+            {"amount_min": "100.00"},
+        )
+
+        self.assertContains(response, "Groceries")
+        self.assertContains(response, "Freelance payment")
+        self.assertNotContains(response, "Old expense")
+
+    def test_reversed_amount_range_shows_error(self):
+        response = self.client.get(
+            self.list_url,
+            {"amount_min": "200.00", "amount_max": "100.00"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(
+            response,
+            "Maximum amount must be on or after the minimum amount.",
+        )
+
+    def test_invalid_amount_shows_error(self):
+        response = self.client.get(
+            self.list_url,
+            {"amount_min": "not-a-number"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Enter a number.")
+
+    def test_sort_newest_first_by_default(self):
+        response = self.client.get(self.list_url)
+
+        self.assertEqual(
+            [transaction.title for transaction in response.context["transactions"]],
+            ["Freelance payment", "Groceries", "Old expense"],
+        )
+
+    def test_sort_oldest_first(self):
+        response = self.client.get(
+            self.list_url,
+            {"sort": "oldest"},
+        )
+
+        self.assertEqual(
+            [transaction.title for transaction in response.context["transactions"]],
+            ["Old expense", "Groceries", "Freelance payment"],
+        )
+
+    def test_sort_amount_high_to_low(self):
+        response = self.client.get(
+            self.list_url,
+            {"sort": "amount_desc"},
+        )
+
+        self.assertEqual(
+            [transaction.title for transaction in response.context["transactions"]],
+            ["Freelance payment", "Groceries", "Old expense"],
+        )
+
+    def test_sort_amount_low_to_high(self):
+        response = self.client.get(
+            self.list_url,
+            {"sort": "amount_asc"},
+        )
+
+        self.assertEqual(
+            [transaction.title for transaction in response.context["transactions"]],
+            ["Old expense", "Groceries", "Freelance payment"],
+        )
+
+    def test_sort_title_alphabetically(self):
+        response = self.client.get(
+            self.list_url,
+            {"sort": "title"},
+        )
+
+        self.assertEqual(
+            [transaction.title for transaction in response.context["transactions"]],
+            ["Freelance payment", "Groceries", "Old expense"],
+        )
+
+    def test_invalid_sort_shows_error(self):
+        response = self.client.get(
+            self.list_url,
+            {"sort": "not-a-sort"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Select a valid choice.")
+
+    def test_sort_alone_is_not_an_active_filter(self):
+        response = self.client.get(
+            self.list_url,
+            {"sort": "oldest"},
+        )
+
+        self.assertFalse(response.context["has_filters"])
+        self.assertContains(response, "3 transactions")
+
 
 class TransactionPaginationTests(TransactionViewTestCase):
     @classmethod
@@ -736,3 +921,23 @@ class TransactionPaginationTests(TransactionViewTestCase):
 
         self.assertEqual(response.context["querystring"], "type=expense")
         self.assertContains(response, "type=expense&amp;page=1")
+
+    def test_pagination_preserves_search_amount_and_sort(self):
+        response = self.client.get(
+            reverse("transactions:list"),
+            {
+                "q": "Transaction",
+                "amount_min": "10.00",
+                "sort": "oldest",
+                "page": 2,
+            },
+        )
+
+        self.assertEqual(
+            response.context["querystring"],
+            "q=Transaction&amount_min=10.00&sort=oldest",
+        )
+        self.assertContains(
+            response,
+            "q=Transaction&amp;amount_min=10.00&amp;sort=oldest&amp;page=1",
+        )

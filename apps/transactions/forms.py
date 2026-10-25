@@ -1,4 +1,7 @@
+from decimal import Decimal
+
 from django import forms
+from django.db import models
 from django.utils import timezone
 
 from apps.categories.forms import CategoryChoiceField
@@ -91,6 +94,25 @@ class TransactionForm(BootstrapFormMixin, forms.ModelForm):
 
 
 class TransactionFilterForm(BootstrapFormMixin, forms.Form):
+    class Sort(models.TextChoices):
+        NEWEST = "newest", "Newest first"
+        OLDEST = "oldest", "Oldest first"
+        AMOUNT_DESC = "amount_desc", "Amount: high to low"
+        AMOUNT_ASC = "amount_asc", "Amount: low to high"
+        TITLE = "title", "Title: A to Z"
+
+    q = forms.CharField(
+        required=False,
+        label="Search",
+        max_length=200,
+        widget=forms.TextInput(
+            attrs={
+                "type": "search",
+                "placeholder": "Title, notes, or category",
+                "autocomplete": "off",
+            }
+        ),
+    )
     type = forms.ChoiceField(
         required=False,
         label="Type",
@@ -112,21 +134,79 @@ class TransactionFilterForm(BootstrapFormMixin, forms.Form):
         label="To",
         widget=forms.DateInput(attrs={"type": "date"}),
     )
+    amount_min = forms.DecimalField(
+        required=False,
+        label="Min amount",
+        max_digits=12,
+        decimal_places=2,
+        min_value=Decimal("0.00"),
+        widget=forms.NumberInput(
+            attrs={
+                "step": "0.01",
+                "min": "0.00",
+                "inputmode": "decimal",
+            }
+        ),
+    )
+    amount_max = forms.DecimalField(
+        required=False,
+        label="Max amount",
+        max_digits=12,
+        decimal_places=2,
+        min_value=Decimal("0.00"),
+        widget=forms.NumberInput(
+            attrs={
+                "step": "0.01",
+                "min": "0.00",
+                "inputmode": "decimal",
+            }
+        ),
+    )
+    sort = forms.ChoiceField(
+        required=False,
+        label="Sort by",
+        choices=Sort.choices,
+        initial=Sort.NEWEST,
+    )
 
     def __init__(self, *args, user, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["category"].queryset = Category.objects.filter(user=user)
         self.apply_bootstrap_classes()
+        self.order_fields(
+            [
+                "q",
+                "type",
+                "category",
+                "date_from",
+                "date_to",
+                "amount_min",
+                "amount_max",
+                "sort",
+            ]
+        )
 
     def clean(self):
         cleaned_data = super().clean()
         date_from = cleaned_data.get("date_from")
         date_to = cleaned_data.get("date_to")
+        amount_min = cleaned_data.get("amount_min")
+        amount_max = cleaned_data.get("amount_max")
 
         if date_from and date_to and date_from > date_to:
             self.add_error(
                 "date_to",
                 "End date must be on or after the start date.",
+            )
+
+        if (
+            amount_min is not None
+            and amount_max is not None
+            and amount_min > amount_max
+        ):
+            self.add_error(
+                "amount_max",
+                "Maximum amount must be on or after the minimum amount.",
             )
 
         return cleaned_data

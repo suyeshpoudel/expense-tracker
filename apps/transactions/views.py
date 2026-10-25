@@ -4,12 +4,21 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db.models import Q, Sum
+from django.db.models.functions import Lower
 from django.shortcuts import get_object_or_404, redirect, render
 
 from .forms import TransactionFilterForm, TransactionForm
 from .models import Transaction
 
 PAGE_SIZE = 20
+
+SORT_ORDERS = {
+    TransactionFilterForm.Sort.NEWEST: ("-date", "-created_at"),
+    TransactionFilterForm.Sort.OLDEST: ("date", "created_at"),
+    TransactionFilterForm.Sort.AMOUNT_DESC: ("-amount", "-date"),
+    TransactionFilterForm.Sort.AMOUNT_ASC: ("amount", "-date"),
+    TransactionFilterForm.Sort.TITLE: (Lower("title"), "-date"),
+}
 
 
 def user_transactions(user):
@@ -23,6 +32,12 @@ def transaction_list(request):
 
     if filter_form.is_bound and filter_form.is_valid():
         filters = filter_form.cleaned_data
+        if filters["q"]:
+            transactions = transactions.filter(
+                Q(title__icontains=filters["q"])
+                | Q(notes__icontains=filters["q"])
+                | Q(category__name__icontains=filters["q"])
+            )
         if filters["type"]:
             transactions = transactions.filter(
                 transaction_type=filters["type"]
@@ -35,6 +50,17 @@ def transaction_list(request):
             )
         if filters["date_to"]:
             transactions = transactions.filter(date__lte=filters["date_to"])
+        if filters["amount_min"] is not None:
+            transactions = transactions.filter(
+                amount__gte=filters["amount_min"]
+            )
+        if filters["amount_max"] is not None:
+            transactions = transactions.filter(
+                amount__lte=filters["amount_max"]
+            )
+
+        sort = filters["sort"] or TransactionFilterForm.Sort.NEWEST
+        transactions = transactions.order_by(*SORT_ORDERS[sort])
 
     totals = transactions.aggregate(
         expenses=Sum(
@@ -55,11 +81,20 @@ def transaction_list(request):
     query_params = request.GET.copy()
     query_params.pop("page", None)
 
-    has_filters = bool(
-        filter_form.is_bound
-        and filter_form.is_valid()
-        and any(filter_form.cleaned_data.values())
-    )
+    has_filters = False
+    if filter_form.is_bound and filter_form.is_valid():
+        filters = filter_form.cleaned_data
+        has_filters = any(
+            [
+                filters["q"],
+                filters["type"],
+                filters["category"],
+                filters["date_from"],
+                filters["date_to"],
+                filters["amount_min"] is not None,
+                filters["amount_max"] is not None,
+            ]
+        )
 
     context = {
         "filter_form": filter_form,
