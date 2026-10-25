@@ -3,7 +3,7 @@
 A server-rendered personal expense tracker built with Django. The project is
 being developed incrementally; the current state includes user accounts, a
 login-protected dashboard, expense/income transactions, category management,
-and monthly reports with charts.
+monthly budgets, and reports with charts.
 
 ## Stack
 
@@ -52,6 +52,10 @@ automatically. Export the values in your shell or use your process manager.
 | `/accounts/logout/` | Log out (POST only) | Any |
 | `/dashboard/` | Personal dashboard and spending overview | Logged-in users |
 | `/reports/` | Date-range income, expense, category and trend reports | Logged-in users |
+| `/budgets/` | Monthly budgets and spending usage | Logged-in users |
+| `/budgets/new/` | Set a budget for a month | Logged-in users |
+| `/budgets/<id>/edit/` | Edit a monthly budget | Owner only |
+| `/budgets/<id>/delete/` | Delete confirmation for a budget | Owner only |
 | `/transactions/` | Transaction list, totals and filters | Logged-in users |
 | `/transactions/new/` | Add an expense or income | Logged-in users |
 | `/transactions/<id>/` | Transaction details | Owner only |
@@ -75,11 +79,12 @@ python manage.py test
 ```
 config/                 Project settings and root URL configuration
 apps/accounts/          Registration, login and logout
+apps/budgets/           Monthly budget model, calculations, forms and views
 apps/categories/        Category model, defaults, forms and views
 apps/core/              Home, dashboard, reports, calculations and shared context
 apps/transactions/      Transaction model, forms, views and tests
 apps/common/            Shared form helpers
-templates/              Shared, account, dashboard, report, transaction and category templates
+templates/              Shared, account, dashboard, report, budget, transaction and category templates
 static/css/             Application styles
 static/js/              Chart.js configuration
 static/vendor/          Vendored Bootstrap and Chart.js assets with licenses
@@ -100,7 +105,7 @@ Project conventions:
 - [x] Milestone 2 - Expense and income transactions
 - [x] Milestone 3 - Category management
 - [x] Milestone 4 - Dashboard calculations and reports
-- [ ] Milestone 5 - Monthly budgets
+- [x] Milestone 5 - Monthly budgets
 - [ ] Milestone 6 - Search, filtering, and user experience
 - [ ] Milestone 7 - Testing, security, and release preparation
 
@@ -120,9 +125,9 @@ Project conventions:
   A successful registration logs the user in and redirects to the dashboard.
 - Logout is a POST request from the navigation bar, protected by CSRF.
 - The dashboard shows current-month expenses, income and net cash flow from
-  database aggregates, plus recent transactions, category spending, and a
-  six-month expense trend. The remaining-budget card stays a placeholder until
-  budgets are implemented in Milestone 5.
+  database aggregates, plus recent transactions, category spending, a six-month
+  expense trend, and the current month's budget status. When no budget exists,
+  the card links to the budget setup form.
 - Registration is open to anyone who can reach the site. Restricting or closing
   registration should be considered before any public deployment.
 - Transaction amounts are stored as `DecimalField(max_digits=12,
@@ -148,8 +153,9 @@ Project conventions:
 - The transaction form requires a category matching the transaction type.
   Transactions recorded before categories existed remain in the database as
   uncategorized and are labeled that way in the UI.
-- Users can only list, view, edit, or delete their own transactions and
-  categories; owner lookups use `get_object_or_404` scoped to the logged-in user.
+- Users can only list, view, edit, or delete their own transactions,
+  categories, and budgets; owner lookups use `get_object_or_404` scoped to the
+  logged-in user.
 - The transaction list can be filtered by type, category, and date range, and
   pagination preserves those filters.
 - Income and expense totals are calculated separately and never mixed. Net cash
@@ -164,3 +170,15 @@ Project conventions:
 - Chart.js is vendored in `static/vendor/chartjs` with its MIT license. Charts
   are progressive enhancement: category totals remain visible in a table and
   monthly totals are available in an expandable data table.
+- Each user can set one overall budget per calendar month. Budgets are stored
+  against the first day of the month, use a native month picker in the form, and
+  must be greater than zero. Past, current, and future months can be edited.
+- Budget usage counts expense transactions only. Income does not increase the
+  amount available; budgets are limits, not envelopes. Money does not roll over
+  between months, and there are no per-category budgets yet.
+- Remaining budget is the monthly budget minus that month's expenses. Usage at
+  80% or more is marked "Near limit"; usage above 100% is "Over budget" and the
+  progress bar caps at 100%. Every month with a budget shows its own usage.
+- Budgets are user-owned and scoped to the logged-in user. Deleting a budget
+  never deletes transactions. The reports page remains date-range based and does
+  not apply monthly budget limits to arbitrary ranges.
