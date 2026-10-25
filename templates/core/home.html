@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}Expense Tracker{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="app-hero p-4 p-md-5 rounded-4">
+            <p class="text-uppercase small fw-semibold app-eyebrow mb-2">Personal finance</p>
+            <h1 class="display-6 fw-bold mb-3">Know where your money goes.</h1>
+            <p class="lead mb-4">
+                Record expenses and income, organize them by category, and track
+                your monthly spending in one place.
+            </p>
+            <p class="mb-0 small app-muted">
+                Accounts and transaction tracking are coming in the next milestones.
+            </p>
+        </div>
+
+        <div class="row g-3 mt-1">
+            <div class="col-md-4">
+                <div class="card h-100 app-card">
+                    <div class="card-body">
+                        <h2 class="h5 card-title">Quick entry</h2>
+                        <p class="card-text small app-muted mb-0">
+                            Record daily expenses and income with minimal effort.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 app-card">
+                    <div class="card-body">
+                        <h2 class="h5 card-title">Clear categories</h2>
+                        <p class="card-text small app-muted mb-0">
+                            See spending grouped into categories that make sense to you.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 app-card">
+                    <div class="card-body">
+                        <h2 class="h5 card-title">Monthly focus</h2>
+                        <p class="card-text small app-muted mb-0">
+                            Track each month against a budget you control.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

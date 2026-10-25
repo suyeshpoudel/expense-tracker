@@ -1,0 +1,74 @@
+:root {
+    --app-ink: #14231d;
+    --app-accent: #146c43;
+    --app-accent-dark: #0f5132;
+    --app-surface: #f4f7f5;
+    --app-border: #dbe5df;
+    --app-muted: #52615b;
+}
+
+body {
+    background-color: var(--app-surface);
+    color: var(--app-ink);
+}
+
+.app-navbar {
+    background-color: var(--app-accent-dark);
+}
+
+.app-navbar .navbar-brand {
+    letter-spacing: 0.01em;
+}
+
+.app-navbar .nav-link {
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.app-navbar .nav-link:hover,
+.app-navbar .nav-link:focus,
+.app-navbar .nav-link.active {
+    color: #fff;
+}
+
+.app-hero {
+    background-color: #ffffff;
+    border: 1px solid var(--app-border);
+    box-shadow: 0 0.75rem 2rem rgba(20, 35, 29, 0.06);
+}
+
+.app-eyebrow {
+    color: var(--app-accent);
+    letter-spacing: 0.08em;
+}
+
+.app-card {
+    border: 1px solid var(--app-border);
+    border-radius: 0.75rem;
+}
+
+.app-card .card-title {
+    color: var(--app-accent-dark);
+}
+
+.app-muted {
+    color: var(--app-muted);
+}
+
+.app-footer {
+    color: var(--app-muted);
+    border-top: 1px solid var(--app-border);
+    background-color: #ffffff;
+}
+
+a {
+    color: var(--app-accent);
+}
+
+a:hover {
+    color: var(--app-accent-dark);
+}
+
+:focus-visible {
+    outline: 3px solid #198754;
+    outline-offset: 2px;
+}
