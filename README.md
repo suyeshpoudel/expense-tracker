@@ -1,8 +1,8 @@
 # Expense Tracker
 
 A server-rendered personal expense tracker built with Django. The project is
-being developed incrementally; the current state includes user accounts and a
-login-protected dashboard with empty states.
+being developed incrementally; the current state includes user accounts, a
+login-protected dashboard, and full expense/income transaction management.
 
 ## Stack
 
@@ -48,6 +48,11 @@ automatically. Export the values in your shell or use your process manager.
 | `/accounts/login/` | Log in | Public |
 | `/accounts/logout/` | Log out (POST only) | Any |
 | `/dashboard/` | Personal dashboard | Logged-in users |
+| `/transactions/` | Transaction list, totals and filters | Logged-in users |
+| `/transactions/new/` | Add an expense or income | Logged-in users |
+| `/transactions/<id>/` | Transaction details | Owner only |
+| `/transactions/<id>/edit/` | Edit a transaction | Owner only |
+| `/transactions/<id>/delete/` | Delete confirmation | Owner only |
 | `/admin/` | Django admin | Staff users |
 
 ## Tests and checks
@@ -62,8 +67,10 @@ python manage.py test
 ```
 config/                 Project settings and root URL configuration
 apps/accounts/          Registration, login and logout
-apps/core/              Home page and dashboard
-templates/              Shared, account and dashboard templates
+apps/core/              Home page, dashboard and shared context
+apps/transactions/      Transaction model, forms, views and tests
+apps/common/            Shared form helpers
+templates/              Shared, account, dashboard and transaction templates
 static/css/             Application styles
 static/vendor/          Vendored Bootstrap CSS/JS and license
 requirements.txt        Python dependencies
@@ -80,7 +87,7 @@ Project conventions:
 
 - [x] Milestone 0 - Project planning and setup
 - [x] Milestone 1 - Authentication and personal dashboard
-- [ ] Milestone 2 - Expense and income transactions
+- [x] Milestone 2 - Expense and income transactions
 - [ ] Milestone 3 - Category management
 - [ ] Milestone 4 - Dashboard calculations and reports
 - [ ] Milestone 5 - Monthly budgets
@@ -105,3 +112,14 @@ Project conventions:
   transaction data exists.
 - Registration is open to anyone who can reach the site. Restricting or closing
   registration should be considered before any public deployment.
+- Transaction amounts are stored as `DecimalField(max_digits=12,
+  decimal_places=2)` and must be greater than zero, enforced by a validator and
+  a database check constraint.
+- Transaction dates cannot be in the future. This is a form-level rule; it can
+  be relaxed later if planned transactions become a feature.
+- The transaction list shows totals for the active filter and uses 20 items per
+  page. The dashboard's monthly totals remain placeholders until Milestone 4.
+- Categories are intentionally deferred to Milestone 3. The transaction model
+  will gain a category relationship in that milestone.
+- Users can only list, view, edit, or delete their own transactions; owner
+  lookups use `get_object_or_404` scoped to the logged-in user.
