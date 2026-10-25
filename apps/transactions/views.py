@@ -1,11 +1,14 @@
 from decimal import Decimal
 
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db.models import Q, Sum
 from django.db.models.functions import Lower
 from django.shortcuts import get_object_or_404, redirect, render
+
+from apps.common.forms import changed_field_labels
 
 from .forms import TransactionFilterForm, TransactionForm
 from .models import Transaction
@@ -124,12 +127,22 @@ def transaction_create(request):
         initial=initial,
     )
 
-    if request.method == "POST" and form.is_valid():
-        transaction = form.save(commit=False)
-        transaction.user = request.user
-        transaction.save()
-        messages.success(request, "Transaction added successfully.")
-        return redirect("transactions:detail", pk=transaction.pk)
+    if request.method == "POST":
+        if form.is_valid():
+            transaction = form.save(commit=False)
+            transaction.user = request.user
+            transaction.save()
+            messages.success(
+                request,
+                f'{transaction.get_transaction_type_display()} '
+                f'"{transaction.title}" for {settings.CURRENCY_CODE} '
+                f"{transaction.amount:,.2f} added.",
+            )
+            return redirect("transactions:detail", pk=transaction.pk)
+        messages.error(
+            request,
+            "Transaction was not added. Please fix the highlighted fields.",
+        )
 
     return render(
         request,
@@ -169,10 +182,27 @@ def transaction_edit(request, pk):
         user=request.user,
     )
 
-    if request.method == "POST" and form.is_valid():
-        form.save()
-        messages.success(request, "Transaction updated successfully.")
-        return redirect("transactions:detail", pk=transaction.pk)
+    if request.method == "POST":
+        if form.is_valid():
+            changed_labels = changed_field_labels(form)
+            transaction = form.save()
+            if changed_labels:
+                messages.success(
+                    request,
+                    f'Transaction "{transaction.title}" updated: '
+                    f'{", ".join(changed_labels)}.',
+                )
+            else:
+                messages.info(
+                    request,
+                    f'Transaction "{transaction.title}" saved. '
+                    "No changes were detected.",
+                )
+            return redirect("transactions:detail", pk=transaction.pk)
+        messages.error(
+            request,
+            "Transaction was not updated. Please fix the highlighted fields.",
+        )
 
     return render(
         request,
@@ -195,8 +225,12 @@ def transaction_delete(request, pk):
     )
 
     if request.method == "POST":
+        title = transaction.title
         transaction.delete()
-        messages.success(request, "Transaction deleted.")
+        messages.success(
+            request,
+            f'Transaction "{title}" deleted.',
+        )
         return redirect("transactions:list")
 
     return render(

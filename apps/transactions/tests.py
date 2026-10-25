@@ -232,12 +232,24 @@ class TransactionCreateTests(TransactionViewTestCase):
         )
 
     def test_create_expense(self):
-        response = self.client.post(self.create_url, self.valid_data())
+        response = self.client.post(
+            self.create_url,
+            self.valid_data(),
+            follow=True,
+        )
 
         transaction = Transaction.objects.get()
         self.assertRedirects(
             response,
             reverse("transactions:detail", args=[transaction.pk]),
+        )
+        self.assertContains(
+            response,
+            'Expense &quot;Monthly rent&quot; for NPR 1,234.56 added.',
+        )
+        self.assertContains(
+            response,
+            'class="toast app-toast app-toast-success"',
         )
         self.assertEqual(transaction.user, self.user)
         self.assertEqual(
@@ -399,11 +411,17 @@ class TransactionDetailEditDeleteTests(TransactionViewTestCase):
                 "date": transaction.date.isoformat(),
                 "notes": "",
             },
+            follow=True,
         )
 
         self.assertRedirects(
             response,
             reverse("transactions:detail", args=[transaction.pk]),
+        )
+        self.assertContains(
+            response,
+            'Transaction &quot;Updated title&quot; updated: '
+            "Type, Category, Amount, Title.",
         )
         transaction.refresh_from_db()
         self.assertEqual(transaction.transaction_type, Transaction.Type.INCOME)
@@ -449,10 +467,12 @@ class TransactionDetailEditDeleteTests(TransactionViewTestCase):
         transaction = self.create_transaction()
 
         response = self.client.post(
-            reverse("transactions:delete", args=[transaction.pk])
+            reverse("transactions:delete", args=[transaction.pk]),
+            follow=True,
         )
 
         self.assertRedirects(response, reverse("transactions:list"))
+        self.assertContains(response, 'Transaction &quot;Coffee&quot; deleted.')
         self.assertFalse(Transaction.objects.filter(pk=transaction.pk).exists())
 
 

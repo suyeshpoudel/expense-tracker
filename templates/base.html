@@ -9,92 +9,233 @@
     <link rel="stylesheet" href="{% static 'vendor/bootstrap/bootstrap.min.css' %}">
     <link rel="stylesheet" href="{% static 'css/app.css' %}">
 </head>
-<body class="d-flex flex-column min-vh-100">
+<body class="d-flex flex-column min-vh-100{% if user.is_authenticated %} app-authenticated{% endif %}">
     <a class="visually-hidden-focusable p-2 bg-white" href="#main-content">Skip to main content</a>
 
     <nav class="navbar navbar-expand-lg navbar-dark app-navbar" aria-label="Main navigation">
         <div class="container">
-            <a class="navbar-brand fw-semibold" href="{% url 'core:home' %}">
-                Expense Tracker
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-                    data-bs-target="#main-navigation" aria-controls="main-navigation"
-                    aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="main-navigation">
-                <ul class="navbar-nav ms-auto align-items-md-center">
-                    <li class="nav-item">
-                        <a class="nav-link{% if request.resolver_match.url_name == 'home' %} active{% endif %}"
-                           {% if request.resolver_match.url_name == 'home' %}aria-current="page"{% endif %}
-                           href="{% url 'core:home' %}">Home</a>
-                    </li>
-                    {% if user.is_authenticated %}
-                        <li class="nav-item">
-                            <a class="nav-link{% if request.resolver_match.url_name == 'dashboard' %} active{% endif %}"
-                               {% if request.resolver_match.url_name == 'dashboard' %}aria-current="page"{% endif %}
-                               href="{% url 'core:dashboard' %}">Dashboard</a>
+            {% if user.is_authenticated %}
+                <button class="navbar-toggler d-lg-none me-2" type="button"
+                        data-bs-toggle="offcanvas" data-bs-target="#app-sidebar"
+                        aria-controls="app-sidebar" aria-label="Toggle sidebar">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <a class="navbar-brand fw-semibold" href="{% url 'core:home' %}">
+                    Expense Tracker
+                </a>
+                <div class="dropdown ms-auto">
+                    <button class="btn app-user-toggle" type="button" id="navbar-user-menu"
+                            data-bs-toggle="dropdown" aria-expanded="false"
+                            aria-label="Account menu for {{ user.get_username }}">
+                        <svg class="app-user-icon" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                             stroke-linejoin="round" aria-hidden="true" focusable="false">
+                            <circle cx="12" cy="8" r="3.5"></circle>
+                            <path d="M4.5 20a7.5 7.5 0 0 1 15 0"></path>
+                        </svg>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end app-user-dropdown"
+                        aria-labelledby="navbar-user-menu">
+                        <li class="app-user-summary">
+                            <span class="app-user-name d-block">{{ user.get_full_name|default:user.get_username }}</span>
+                            <span class="app-user-username d-block">@{{ user.get_username }}</span>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link{% if request.resolver_match.namespace == 'budgets' %} active{% endif %}"
-                               {% if request.resolver_match.namespace == 'budgets' %}aria-current="page"{% endif %}
-                               href="{% url 'budgets:list' %}">Budgets</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link{% if request.resolver_match.url_name == 'reports' %} active{% endif %}"
-                               {% if request.resolver_match.url_name == 'reports' %}aria-current="page"{% endif %}
-                               href="{% url 'core:reports' %}">Reports</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link{% if request.resolver_match.namespace == 'transactions' %} active{% endif %}"
-                               {% if request.resolver_match.namespace == 'transactions' %}aria-current="page"{% endif %}
-                               href="{% url 'transactions:list' %}">Transactions</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link{% if request.resolver_match.namespace == 'categories' %} active{% endif %}"
-                               {% if request.resolver_match.namespace == 'categories' %}aria-current="page"{% endif %}
-                               href="{% url 'categories:list' %}">Categories</a>
-                        </li>
-                        <li class="nav-item">
-                            <span class="navbar-text small text-white-50 px-md-2">{{ user.get_username }}</span>
-                        </li>
-                        <li class="nav-item">
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
                             <form method="post" action="{% url 'accounts:logout' %}">
                                 {% csrf_token %}
-                                <button class="btn btn-link nav-link" type="submit">Log out</button>
+                                <button class="dropdown-item app-user-logout" type="submit">Log out</button>
                             </form>
                         </li>
-                    {% else %}
+                    </ul>
+                </div>
+            {% else %}
+                <a class="navbar-brand fw-semibold" href="{% url 'core:home' %}">
+                    Expense Tracker
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#main-navigation" aria-controls="main-navigation"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="main-navigation">
+                    <ul class="navbar-nav ms-auto align-items-md-center">
                         <li class="nav-item">
-                            <a class="nav-link{% if request.resolver_match.url_name == 'login' %} active{% endif %}"
-                               {% if request.resolver_match.url_name == 'login' %}aria-current="page"{% endif %}
+                            <a class="btn btn-outline-light fw-semibold px-3 me-md-2 my-2 my-md-0"
                                href="{% url 'accounts:login' %}">Log in</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link{% if request.resolver_match.url_name == 'register' %} active{% endif %}"
-                               {% if request.resolver_match.url_name == 'register' %}aria-current="page"{% endif %}
-                               href="{% url 'accounts:register' %}">Register</a>
+                            <a class="btn app-nav-cta fw-semibold px-3 my-2 my-md-0" href="{% url 'accounts:register' %}">
+                                Get started
+                            </a>
                         </li>
-                    {% endif %}
-                </ul>
-            </div>
+                    </ul>
+                </div>
+            {% endif %}
         </div>
     </nav>
 
     {% if messages %}
-        <div class="container mt-3" role="status" aria-live="polite">
+        <div class="toast-container position-fixed end-0 p-3 app-toast-container"
+             data-app-toasts aria-live="polite" aria-atomic="true">
             {% for message in messages %}
-                <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                <div class="toast app-toast app-toast-{{ message.tags|default:'info' }}"
+                     role="{% if message.tags == 'danger' %}alert{% else %}status{% endif %}"
+                     aria-live="{% if message.tags == 'danger' %}assertive{% else %}polite{% endif %}"
+                     aria-atomic="true"
+                     data-bs-autohide="true" data-bs-delay="5000">
+                    <div class="toast-header">
+                        <span class="app-toast-dot" aria-hidden="true"></span>
+                        <strong class="me-auto">
+                            {% if message.tags == 'success' %}
+                                Success
+                            {% elif message.tags == 'danger' %}
+                                Error
+                            {% elif message.tags == 'warning' %}
+                                Warning
+                            {% else %}
+                                Notice
+                            {% endif %}
+                        </strong>
+                        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                    <div class="toast-body">{{ message }}</div>
+                    <div class="app-toast-progress" aria-hidden="true">
+                        <span class="app-toast-progress-bar"></span>
+                    </div>
                 </div>
             {% endfor %}
         </div>
     {% endif %}
 
-    <main id="main-content" class="container py-4 flex-grow-1">
-        {% block content %}{% endblock %}
-    </main>
+    <div class="app-shell{% if user.is_authenticated %} d-lg-flex{% endif %}">
+        {% if user.is_authenticated %}
+            <aside class="offcanvas-lg offcanvas-start app-sidebar" tabindex="-1"
+                   id="app-sidebar" aria-labelledby="app-sidebar-title">
+                <div class="offcanvas-header">
+                    <span class="offcanvas-title fw-semibold" id="app-sidebar-title">Menu</span>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"
+                            data-bs-target="#app-sidebar" aria-label="Close"></button>
+                </div>
+                <div class="offcanvas-body flex-column">
+                    <nav class="app-sidebar-nav" aria-label="Section navigation">
+                        <div class="app-sidebar-top d-flex align-items-center justify-content-between gap-2 mb-2">
+                            <p class="text-uppercase small fw-semibold app-eyebrow app-sidebar-heading mb-0">Menu</p>
+                            <button class="btn app-sidebar-toggle d-none d-lg-inline-flex align-items-center justify-content-center"
+                                    type="button" id="sidebar-toggle"
+                                    aria-controls="app-sidebar" aria-expanded="true"
+                                    aria-label="Collapse sidebar" title="Collapse sidebar">
+                                <svg class="app-sidebar-toggle-icon" viewBox="0 0 24 24" fill="none"
+                                     stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                     stroke-linejoin="round" aria-hidden="true" focusable="false">
+                                    <path d="m15 18-6-6 6-6"></path>
+                                </svg>
+                            </button>
+                        </div>
+                        <ul class="nav flex-column gap-1">
+                            <li class="nav-item">
+                                <a class="nav-link d-flex align-items-center gap-2{% if request.resolver_match.url_name == 'dashboard' %} active{% endif %}"
+                                   {% if request.resolver_match.url_name == 'dashboard' %}aria-current="page"{% endif %}
+                                   aria-label="Dashboard" title="Dashboard"
+                                   href="{% url 'core:dashboard' %}">
+                                    <svg class="app-sidebar-icon" viewBox="0 0 24 24" fill="none"
+                                         stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                                         stroke-linejoin="round" aria-hidden="true" focusable="false">
+                                        <rect x="3" y="3" width="7" height="7" rx="1.5"></rect>
+                                        <rect x="14" y="3" width="7" height="7" rx="1.5"></rect>
+                                        <rect x="3" y="14" width="7" height="7" rx="1.5"></rect>
+                                        <rect x="14" y="14" width="7" height="7" rx="1.5"></rect>
+                                    </svg>
+                                    <span class="app-sidebar-label">Dashboard</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link d-flex align-items-center gap-2{% if request.resolver_match.namespace == 'budgets' %} active{% endif %}"
+                                   {% if request.resolver_match.namespace == 'budgets' %}aria-current="page"{% endif %}
+                                   aria-label="Budgets" title="Budgets"
+                                   href="{% url 'budgets:list' %}">
+                                    <svg class="app-sidebar-icon" viewBox="0 0 24 24" fill="none"
+                                         stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                                         stroke-linejoin="round" aria-hidden="true" focusable="false">
+                                        <path d="M4 7.5A2.5 2.5 0 0 1 6.5 5H18a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6.5A2.5 2.5 0 0 1 4 16.5v-9Z"></path>
+                                        <path d="M4 8h16"></path>
+                                        <path d="M15 12h3"></path>
+                                    </svg>
+                                    <span class="app-sidebar-label">Budgets</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link d-flex align-items-center gap-2{% if request.resolver_match.url_name == 'reports' %} active{% endif %}"
+                                   {% if request.resolver_match.url_name == 'reports' %}aria-current="page"{% endif %}
+                                   aria-label="Reports" title="Reports"
+                                   href="{% url 'core:reports' %}">
+                                    <svg class="app-sidebar-icon" viewBox="0 0 24 24" fill="none"
+                                         stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                                         stroke-linejoin="round" aria-hidden="true" focusable="false">
+                                        <path d="M4 20V10"></path>
+                                        <path d="M10 20V4"></path>
+                                        <path d="M16 20v-6"></path>
+                                        <path d="M2 20h20"></path>
+                                    </svg>
+                                    <span class="app-sidebar-label">Reports</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link d-flex align-items-center gap-2{% if request.resolver_match.namespace == 'transactions' %} active{% endif %}"
+                                   {% if request.resolver_match.namespace == 'transactions' %}aria-current="page"{% endif %}
+                                   aria-label="Transactions" title="Transactions"
+                                   href="{% url 'transactions:list' %}">
+                                    <svg class="app-sidebar-icon" viewBox="0 0 24 24" fill="none"
+                                         stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                                         stroke-linejoin="round" aria-hidden="true" focusable="false">
+                                        <path d="M4 7h14"></path>
+                                        <path d="m15 4 3 3-3 3"></path>
+                                        <path d="M20 17H6"></path>
+                                        <path d="m9 14-3 3 3 3"></path>
+                                    </svg>
+                                    <span class="app-sidebar-label">Transactions</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link d-flex align-items-center gap-2{% if request.resolver_match.namespace == 'categories' %} active{% endif %}"
+                                   {% if request.resolver_match.namespace == 'categories' %}aria-current="page"{% endif %}
+                                   aria-label="Categories" title="Categories"
+                                   href="{% url 'categories:list' %}">
+                                    <svg class="app-sidebar-icon" viewBox="0 0 24 24" fill="none"
+                                         stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                                         stroke-linejoin="round" aria-hidden="true" focusable="false">
+                                        <path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8Z"></path>
+                                        <circle cx="7.5" cy="7.5" r="1.2"></circle>
+                                    </svg>
+                                    <span class="app-sidebar-label">Categories</span>
+                                </a>
+                            </li>
+                        </ul>
+
+                        <div class="app-sidebar-profile">
+                            <a class="nav-link d-flex align-items-center gap-2 app-sidebar-profile-link{% if request.resolver_match.url_name == 'profile' %} active{% endif %}"
+                               {% if request.resolver_match.url_name == 'profile' %}aria-current="page"{% endif %}
+                               href="{% url 'accounts:profile' %}"
+                               aria-label="View profile for {{ user.get_username }}"
+                               title="{{ user.get_username }}{% if user.email %} · {{ user.email }}{% endif %}">
+                                <span class="app-sidebar-profile-avatar" aria-hidden="true">{{ user.get_username|first|upper }}</span>
+                                <span class="app-sidebar-profile-meta">
+                                    <span class="app-sidebar-profile-name">{{ user.get_username }}</span>
+                                    <span class="app-sidebar-profile-email">{{ user.email|default:"No email added" }}</span>
+                                </span>
+                            </a>
+                        </div>
+                    </nav>
+                </div>
+            </aside>
+        {% endif %}
+
+        <main id="main-content" class="{% if user.is_authenticated %}app-main {% endif %}flex-grow-1 py-4">
+            <div class="container">
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+    </div>
 
     <footer class="app-footer py-3 mt-auto">
         <div class="container text-center small">
@@ -103,6 +244,10 @@
     </footer>
 
     <script src="{% static 'vendor/bootstrap/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'js/toasts.js' %}"></script>
+    {% if user.is_authenticated %}
+        <script src="{% static 'js/sidebar.js' %}"></script>
+    {% endif %}
     {% block extra_js %}{% endblock %}
 </body>
 </html>

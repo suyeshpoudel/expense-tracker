@@ -1,7 +1,10 @@
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
+
+from apps.common.forms import changed_field_labels
 
 from .forms import MonthlyBudgetForm
 from .models import MonthlyBudget
@@ -32,15 +35,21 @@ def budget_create(request):
         user=request.user,
     )
 
-    if request.method == "POST" and form.is_valid():
-        budget = form.save(commit=False)
-        budget.user = request.user
-        budget.save()
-        messages.success(
+    if request.method == "POST":
+        if form.is_valid():
+            budget = form.save(commit=False)
+            budget.user = request.user
+            budget.save()
+            messages.success(
+                request,
+                f"Budget set for {budget.month:%B %Y}: "
+                f"{settings.CURRENCY_CODE} {budget.amount:,.2f}.",
+            )
+            return redirect("budgets:list")
+        messages.error(
             request,
-            f"Budget set for {budget.month:%B %Y}.",
+            "Budget was not saved. Please fix the highlighted fields.",
         )
-        return redirect("budgets:list")
 
     return render(
         request,
@@ -66,13 +75,27 @@ def budget_edit(request, pk):
         user=request.user,
     )
 
-    if request.method == "POST" and form.is_valid():
-        budget = form.save()
-        messages.success(
+    if request.method == "POST":
+        if form.is_valid():
+            changed_labels = changed_field_labels(form)
+            budget = form.save()
+            if changed_labels:
+                messages.success(
+                    request,
+                    f"Budget for {budget.month:%B %Y} updated: "
+                    f"{', '.join(changed_labels)}.",
+                )
+            else:
+                messages.info(
+                    request,
+                    f"Budget for {budget.month:%B %Y} saved. "
+                    "No changes were detected.",
+                )
+            return redirect("budgets:list")
+        messages.error(
             request,
-            f"Budget updated for {budget.month:%B %Y}.",
+            "Budget was not updated. Please fix the highlighted fields.",
         )
-        return redirect("budgets:list")
 
     return render(
         request,
@@ -96,10 +119,11 @@ def budget_delete(request, pk):
 
     if request.method == "POST":
         month_label = f"{budget.month:%B %Y}"
+        amount = f"{settings.CURRENCY_CODE} {budget.amount:,.2f}"
         budget.delete()
         messages.success(
             request,
-            f"Budget removed for {month_label}.",
+            f"Budget for {month_label} ({amount}) removed.",
         )
         return redirect("budgets:list")
 

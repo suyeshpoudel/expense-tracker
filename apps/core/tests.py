@@ -35,7 +35,7 @@ class HomePageTests(TestCase):
         self.assertContains(response, reverse("accounts:register"))
         self.assertNotContains(response, reverse("core:dashboard"))
 
-    def test_authenticated_home_page_shows_navigation(self):
+    def test_authenticated_user_is_redirected_from_landing_page(self):
         user = User.objects.create_user(
             username="suyesh", password="Str0ng-Passw0rd!23"
         )
@@ -43,11 +43,25 @@ class HomePageTests(TestCase):
 
         response = self.client.get(reverse("core:home"))
 
-        self.assertContains(response, reverse("core:dashboard"))
-        self.assertContains(response, reverse("core:reports"))
-        self.assertContains(response, reverse("budgets:list"))
-        self.assertContains(response, reverse("accounts:logout"))
-        self.assertContains(response, "Log out")
+        self.assertRedirects(response, reverse("core:dashboard"))
+
+    def test_landing_page_lists_application_features(self):
+        response = self.client.get(reverse("core:home"))
+
+        self.assertContains(response, "Everyday transactions")
+        self.assertContains(response, "Categories that fit")
+        self.assertContains(response, "Monthly budgets")
+        self.assertContains(response, "Visual reports")
+        self.assertContains(response, "One-glance dashboard")
+        self.assertContains(response, "Private by design")
+        self.assertContains(response, "Start tracking your money today")
+        self.assertContains(response, "Create free account")
+
+    def test_landing_page_has_section_anchors(self):
+        response = self.client.get(reverse("core:home"))
+
+        self.assertContains(response, 'id="features"')
+        self.assertContains(response, 'id="how-it-works"')
 
 
 class ReportViewTestCase(TestCase):
@@ -131,6 +145,19 @@ class DashboardTests(ReportViewTestCase):
             response,
             f"{reverse('accounts:login')}?next={dashboard_url}",
         )
+
+    def test_dashboard_navigation_is_in_sidebar(self):
+        response = self.client.get(reverse("core:dashboard"))
+
+        self.assertContains(response, 'id="app-sidebar"')
+        self.assertContains(response, 'id="sidebar-toggle"')
+        self.assertContains(response, 'class="app-sidebar-icon"', count=5)
+        self.assertContains(response, "js/sidebar.js")
+        self.assertContains(response, reverse("core:dashboard"))
+        self.assertContains(response, reverse("budgets:list"))
+        self.assertContains(response, reverse("core:reports"))
+        self.assertContains(response, reverse("transactions:list"))
+        self.assertContains(response, reverse("categories:list"))
 
     def test_dashboard_renders_real_zero_totals(self):
         response = self.client.get(reverse("core:dashboard"))

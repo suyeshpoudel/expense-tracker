@@ -203,9 +203,18 @@ class CategoryCreateTests(CategoryViewTestCase):
                 "category_type": Category.Type.EXPENSE,
                 "name": "Travel",
             },
+            follow=True,
         )
 
         self.assertRedirects(response, reverse("categories:list"))
+        self.assertContains(
+            response,
+            'Expense category &quot;Travel&quot; created.',
+        )
+        self.assertContains(
+            response,
+            'class="toast app-toast app-toast-success"',
+        )
         category = Category.objects.get(name="Travel")
         self.assertEqual(category.user, self.user)
         self.assertEqual(
@@ -287,6 +296,14 @@ class CategoryCreateTests(CategoryViewTestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertIn("name", response.context["form"].errors)
+        self.assertContains(
+            response,
+            "Category was not created. Please fix the highlighted fields.",
+        )
+        self.assertContains(
+            response,
+            'class="toast app-toast app-toast-danger"',
+        )
 
 
 class CategoryEditTests(CategoryViewTestCase):
@@ -306,9 +323,15 @@ class CategoryEditTests(CategoryViewTestCase):
                 "category_type": Category.Type.EXPENSE,
                 "name": "Groceries and food",
             },
+            follow=True,
         )
 
         self.assertRedirects(response, reverse("categories:list"))
+        self.assertContains(
+            response,
+            'Category &quot;Food and groceries&quot; renamed to '
+            '&quot;Groceries and food&quot;.',
+        )
         transaction.refresh_from_db()
         self.assertEqual(transaction.category_id, self.expense_category.pk)
         self.assertEqual(transaction.category.name, "Groceries and food")
@@ -374,10 +397,12 @@ class CategoryDeleteTests(CategoryViewTestCase):
         self.assertTrue(Category.objects.filter(pk=category.pk).exists())
 
         response = self.client.post(
-            reverse("categories:delete", args=[category.pk])
+            reverse("categories:delete", args=[category.pk]),
+            follow=True,
         )
 
         self.assertRedirects(response, reverse("categories:list"))
+        self.assertContains(response, 'Category &quot;Temporary&quot; deleted.')
         self.assertFalse(Category.objects.filter(pk=category.pk).exists())
 
     def test_delete_used_category_is_blocked(self):

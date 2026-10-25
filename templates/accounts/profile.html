@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block title %}My profile · Expense Tracker{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h1 class="h3 mb-1">My profile</h1>
+    <p class="app-muted mb-0">Manage your account details and password.</p>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-4">
+        <div class="card app-card">
+            <div class="card-body p-4">
+                <div class="d-flex align-items-center gap-3 mb-4">
+                    <div class="app-profile-avatar" aria-hidden="true">{{ user.username|first|upper }}</div>
+                    <div class="app-profile-meta">
+                        <p class="h5 mb-0 text-truncate">{{ user.get_full_name|default:user.username }}</p>
+                        <p class="small app-muted mb-0 text-truncate">
+                            {{ user.email|default:"No email added" }}
+                        </p>
+                    </div>
+                </div>
+
+                <dl class="row small mb-0">
+                    <dt class="col-5 app-muted fw-normal">Username</dt>
+                    <dd class="col-7 mb-2 text-break">{{ user.username }}</dd>
+
+                    <dt class="col-5 app-muted fw-normal">Email</dt>
+                    <dd class="col-7 mb-2 text-break">{{ user.email|default:"&mdash;" }}</dd>
+
+                    <dt class="col-5 app-muted fw-normal">First name</dt>
+                    <dd class="col-7 mb-2">{{ user.first_name|default:"&mdash;" }}</dd>
+
+                    <dt class="col-5 app-muted fw-normal">Last name</dt>
+                    <dd class="col-7 mb-2">{{ user.last_name|default:"&mdash;" }}</dd>
+
+                    <dt class="col-5 app-muted fw-normal">Joined</dt>
+                    <dd class="col-7 mb-2">{{ user.date_joined|date:"F j, Y" }}</dd>
+
+                    <dt class="col-5 app-muted fw-normal">Last login</dt>
+                    <dd class="col-7 mb-0">
+                        {% if user.last_login %}
+                            {{ user.last_login|date:"M j, Y, g:i a" }}
+                        {% else %}
+                            &mdash;
+                        {% endif %}
+                    </dd>
+                </dl>
+
+                <hr class="my-4">
+
+                <div class="row g-2 text-center">
+                    <div class="col-4">
+                        <p class="fs-5 fw-semibold mb-0">{{ transaction_count }}</p>
+                        <p class="small app-muted mb-0">Transactions</p>
+                    </div>
+                    <div class="col-4">
+                        <p class="fs-5 fw-semibold mb-0">{{ category_count }}</p>
+                        <p class="small app-muted mb-0">Categories</p>
+                    </div>
+                    <div class="col-4">
+                        <p class="fs-5 fw-semibold mb-0">{{ budget_count }}</p>
+                        <p class="small app-muted mb-0">Budgets</p>
+                    </div>
+                </div>
+
+                <form method="post" action="{% url 'accounts:logout' %}" class="mt-4">
+                    {% csrf_token %}
+                    <button class="btn btn-outline-danger w-100" type="submit">Log out</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <div class="card app-card mb-4">
+            <div class="card-body p-4">
+                <h2 class="h5 mb-1">Profile details</h2>
+                <p class="small app-muted mb-4">Update the information shown on your account.</p>
+
+                {% if profile_form.non_field_errors %}
+                    <div class="alert alert-danger" role="alert">
+                        {{ profile_form.non_field_errors }}
+                    </div>
+                {% endif %}
+
+                <form method="post" class="app-form" novalidate>
+                    {% csrf_token %}
+                    <input type="hidden" name="form" value="profile">
+
+                    <div class="row g-3">
+                        {% for field in profile_form %}
+                            <div class="{% if field.name == 'username' or field.name == 'email' %}col-12{% else %}col-md-6{% endif %}">
+                                <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                {{ field }}
+                                {% for error in field.errors %}
+                                    <div class="invalid-feedback d-block">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    <button class="btn btn-success mt-4" type="submit">Save changes</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="card app-card">
+            <div class="card-body p-4">
+                <h2 class="h5 mb-1">Change password</h2>
+                <p class="small app-muted mb-4">
+                    Choose a strong password you do not use anywhere else.
+                </p>
+
+                {% if password_form.non_field_errors %}
+                    <div class="alert alert-danger" role="alert">
+                        {{ password_form.non_field_errors }}
+                    </div>
+                {% endif %}
+
+                <form method="post" class="app-form" novalidate>
+                    {% csrf_token %}
+                    <input type="hidden" name="form" value="password">
+
+                    {% for field in password_form %}
+                        <div class="mb-3">
+                            <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                            {{ field }}
+                            {% for error in field.errors %}
+                                <div class="invalid-feedback d-block">{{ error }}</div>
+                            {% endfor %}
+                            {% if field.help_text %}
+                                <div class="form-text">{{ field.help_text|safe }}</div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+
+                    <button class="btn btn-success" type="submit">Update password</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

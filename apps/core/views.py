@@ -2,7 +2,7 @@ from datetime import timedelta
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.utils import timezone
 
 from apps.budgets.models import MonthlyBudget
@@ -20,6 +20,8 @@ from .services import (
 
 
 def home(request):
+    if request.user.is_authenticated:
+        return redirect("core:dashboard")
     return render(request, "core/home.html")
 
 

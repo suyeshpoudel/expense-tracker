@@ -4,6 +4,8 @@ from django.db.models import Count
 from django.db.models.deletion import ProtectedError
 from django.shortcuts import get_object_or_404, redirect, render
 
+from apps.common.forms import changed_field_labels
+
 from .forms import CategoryForm
 from .models import Category
 
@@ -47,12 +49,21 @@ def category_create(request):
         initial=initial,
     )
 
-    if request.method == "POST" and form.is_valid():
-        category = form.save(commit=False)
-        category.user = request.user
-        category.save()
-        messages.success(request, "Category created successfully.")
-        return redirect("categories:list")
+    if request.method == "POST":
+        if form.is_valid():
+            category = form.save(commit=False)
+            category.user = request.user
+            category.save()
+            messages.success(
+                request,
+                f'{category.get_category_type_display()} category '
+                f'"{category.name}" created.',
+            )
+            return redirect("categories:list")
+        messages.error(
+            request,
+            "Category was not created. Please fix the highlighted fields.",
+        )
 
     return render(
         request,
@@ -72,16 +83,39 @@ def category_edit(request, pk):
         pk=pk,
         user=request.user,
     )
+    old_name = category.name
     form = CategoryForm(
         request.POST or None,
         instance=category,
         user=request.user,
     )
 
-    if request.method == "POST" and form.is_valid():
-        form.save()
-        messages.success(request, "Category updated successfully.")
-        return redirect("categories:list")
+    if request.method == "POST":
+        if form.is_valid():
+            changed_labels = changed_field_labels(form)
+            category = form.save()
+            if "Name" in changed_labels:
+                messages.success(
+                    request,
+                    f'Category "{old_name}" renamed to "{category.name}".',
+                )
+            elif changed_labels:
+                messages.success(
+                    request,
+                    f'Category "{category.name}" updated: '
+                    f'{", ".join(changed_labels)}.',
+                )
+            else:
+                messages.info(
+                    request,
+                    f'Category "{category.name}" saved. '
+                    "No changes were detected.",
+                )
+            return redirect("categories:list")
+        messages.error(
+            request,
+            "Category was not updated. Please fix the highlighted fields.",
+        )
 
     return render(
         request,
@@ -125,7 +159,10 @@ def category_delete(request, pk):
             )
             return redirect("categories:list")
 
-        messages.success(request, "Category deleted successfully.")
+        messages.success(
+            request,
+            f'Category "{category.name}" deleted.',
+        )
         return redirect("categories:list")
 
     return render(

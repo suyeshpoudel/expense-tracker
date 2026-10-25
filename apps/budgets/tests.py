@@ -535,10 +535,19 @@ class BudgetCreateTests(BudgetViewTestCase):
         response = self.client.post(
             reverse("budgets:create"),
             {"month": "2026-10", "amount": "1500.00"},
+            follow=True,
         )
 
         budget = MonthlyBudget.objects.get()
         self.assertRedirects(response, reverse("budgets:list"))
+        self.assertContains(
+            response,
+            "Budget set for October 2026: NPR 1,500.00.",
+        )
+        self.assertContains(
+            response,
+            'class="toast app-toast app-toast-success"',
+        )
         self.assertEqual(budget.user, self.user)
         self.assertEqual(budget.month, date(2026, 10, 1))
         self.assertEqual(budget.amount, Decimal("1500.00"))
@@ -577,6 +586,10 @@ class BudgetCreateTests(BudgetViewTestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertIn("amount", response.context["form"].errors)
+        self.assertContains(
+            response,
+            "Budget was not saved. Please fix the highlighted fields.",
+        )
         self.assertFalse(MonthlyBudget.objects.exists())
 
 
@@ -598,10 +611,15 @@ class BudgetEditTests(BudgetViewTestCase):
         response = self.client.post(
             reverse("budgets:edit", args=[budget.pk]),
             {"month": "2026-11", "amount": "1750.00"},
+            follow=True,
         )
 
         budget.refresh_from_db()
         self.assertRedirects(response, reverse("budgets:list"))
+        self.assertContains(
+            response,
+            "Budget for November 2026 updated: Month, Amount.",
+        )
         self.assertEqual(budget.month, date(2026, 11, 1))
         self.assertEqual(budget.amount, Decimal("1750.00"))
 
@@ -633,10 +651,15 @@ class BudgetDeleteTests(BudgetViewTestCase):
         transaction = self.create_transaction(date=date(2026, 10, 5))
 
         response = self.client.post(
-            reverse("budgets:delete", args=[budget.pk])
+            reverse("budgets:delete", args=[budget.pk]),
+            follow=True,
         )
 
         self.assertRedirects(response, reverse("budgets:list"))
+        self.assertContains(
+            response,
+            "Budget for October 2026 (NPR 1,000.00) removed.",
+        )
         self.assertFalse(MonthlyBudget.objects.exists())
         self.assertTrue(
             Transaction.objects.filter(pk=transaction.pk).exists()
