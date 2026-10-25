@@ -1,0 +1,45 @@
+{% if page_obj.has_other_pages %}
+    <nav class="mt-3" aria-label="Transaction pages">
+        <ul class="pagination justify-content-center mb-0">
+            <li class="page-item{% if not page_obj.has_previous %} disabled{% endif %}">
+                {% if page_obj.has_previous %}
+                    <a class="page-link"
+                       href="?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ page_obj.previous_page_number }}"
+                       rel="prev">Previous</a>
+                {% else %}
+                    <span class="page-link">Previous</span>
+                {% endif %}
+            </li>
+
+            {% for number in page_range %}
+                {% if number == page_ellipsis %}
+                    <li class="page-item disabled">
+                        <span class="page-link">{{ number }}</span>
+                    </li>
+                {% elif number == page_obj.number %}
+                    <li class="page-item active" aria-current="page">
+                        <span class="page-link">{{ number }}</span>
+                    </li>
+                {% else %}
+                    <li class="page-item">
+                        <a class="page-link"
+                           href="?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ number }}">{{ number }}</a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+
+            <li class="page-item{% if not page_obj.has_next %} disabled{% endif %}">
+                {% if page_obj.has_next %}
+                    <a class="page-link"
+                       href="?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ page_obj.next_page_number }}"
+                       rel="next">Next</a>
+                {% else %}
+                    <span class="page-link">Next</span>
+                {% endif %}
+            </li>
+        </ul>
+    </nav>
+    <p class="text-center small app-muted mt-2 mb-0">
+        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+    </p>
+{% endif %}

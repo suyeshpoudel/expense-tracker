@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+
+{% block title %}Transactions · Expense Tracker{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+    <div>
+        <h1 class="h3 mb-1">Transactions</h1>
+        <p class="app-muted mb-0">Review and manage your expenses and income.</p>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+        <a class="btn btn-success" href="{% url 'transactions:create' %}?type=expense">Add expense</a>
+        <a class="btn btn-outline-success" href="{% url 'transactions:create' %}?type=income">Add income</a>
+    </div>
+</div>
+
+<form method="get" class="card app-card mb-4">
+    <div class="card-body">
+        {% if filter_form.non_field_errors %}
+            <div class="alert alert-danger" role="alert">
+                {{ filter_form.non_field_errors }}
+            </div>
+        {% endif %}
+
+        <div class="row g-3 align-items-start">
+            <div class="col-sm-6 col-lg-2">
+                <label class="form-label" for="{{ filter_form.type.id_for_label }}">{{ filter_form.type.label }}</label>
+                {{ filter_form.type }}
+                {% for error in filter_form.type.errors %}
+                    <div class="invalid-feedback d-block">{{ error }}</div>
+                {% endfor %}
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <label class="form-label" for="{{ filter_form.date_from.id_for_label }}">{{ filter_form.date_from.label }}</label>
+                {{ filter_form.date_from }}
+                {% for error in filter_form.date_from.errors %}
+                    <div class="invalid-feedback d-block">{{ error }}</div>
+                {% endfor %}
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <label class="form-label" for="{{ filter_form.date_to.id_for_label }}">{{ filter_form.date_to.label }}</label>
+                {{ filter_form.date_to }}
+                {% for error in filter_form.date_to.errors %}
+                    <div class="invalid-feedback d-block">{{ error }}</div>
+                {% endfor %}
+            </div>
+            <div class="col-sm-6 col-lg-4 d-flex align-items-end gap-2">
+                <button class="btn btn-success" type="submit">Apply filters</button>
+                {% if filter_form.is_bound %}
+                    <a class="btn btn-outline-secondary" href="{% url 'transactions:list' %}">Reset</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</form>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card h-100 app-card">
+            <div class="card-body">
+                <p class="small text-uppercase app-muted mb-1">Expenses</p>
+                <p class="h4 mb-0 text-danger">{{ CURRENCY_CODE }} {{ total_expenses|floatformat:2 }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100 app-card">
+            <div class="card-body">
+                <p class="small text-uppercase app-muted mb-1">Income</p>
+                <p class="h4 mb-0 text-success">{{ CURRENCY_CODE }} {{ total_income|floatformat:2 }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100 app-card">
+            <div class="card-body">
+                <p class="small text-uppercase app-muted mb-1">Net cash flow</p>
+                <p class="h4 mb-0 {% if net_total < 0 %}text-danger{% elif net_total > 0 %}text-success{% endif %}">
+                    {{ CURRENCY_CODE }} {{ net_total|floatformat:2 }}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card app-card">
+    <div class="card-header bg-white d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <h2 class="h5 mb-0">Transaction history</h2>
+        <span class="small app-muted">
+            {{ page_obj.paginator.count }} transaction{{ page_obj.paginator.count|pluralize }}
+        </span>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table align-middle mb-0">
+            <thead>
+                <tr>
+                    <th scope="col">Date</th>
+                    <th scope="col">Title</th>
+                    <th scope="col">Type</th>
+                    <th scope="col" class="text-end">Amount</th>
+                    <th scope="col" class="text-end"><span class="visually-hidden">Actions</span></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for transaction in transactions %}
+                    <tr>
+                        <td class="text-nowrap">{{ transaction.date|date:"M j, Y" }}</td>
+                        <td>
+                            <a class="fw-semibold text-decoration-none" href="{% url 'transactions:detail' transaction.pk %}">
+                                {{ transaction.title }}
+                            </a>
+                        </td>
+                        <td>
+                            {% if transaction.transaction_type == "expense" %}
+                                <span class="badge text-bg-danger">Expense</span>
+                            {% else %}
+                                <span class="badge text-bg-success">Income</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end text-nowrap fw-semibold">
+                            {% if transaction.transaction_type == "expense" %}&minus;{% else %}+{% endif %}{{ CURRENCY_CODE }} {{ transaction.amount|floatformat:2 }}
+                        </td>
+                        <td class="text-end text-nowrap">
+                            <a class="btn btn-sm btn-outline-secondary" href="{% url 'transactions:edit' transaction.pk %}">Edit</a>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center py-5">
+                            {% if has_filters %}
+                                <p class="fw-semibold mb-1">No matching transactions</p>
+                                <p class="small app-muted mb-3">Try changing or clearing the filters.</p>
+                                <a class="btn btn-sm btn-outline-secondary" href="{% url 'transactions:list' %}">Clear filters</a>
+                            {% else %}
+                                <p class="fw-semibold mb-1">No transactions yet</p>
+                                <p class="small app-muted mb-3">Record your first expense or income to get started.</p>
+                                <a class="btn btn-sm btn-success" href="{% url 'transactions:create' %}?type=expense">Add expense</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% include "includes/pagination.html" %}
+{% endblock %}

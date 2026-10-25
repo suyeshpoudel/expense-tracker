@@ -2,17 +2,7 @@ from django import forms
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth.models import User
 
-
-class BootstrapFormMixin:
-    """Apply Bootstrap classes to form widgets."""
-
-    def apply_bootstrap_classes(self):
-        for field in self.fields.values():
-            if isinstance(field.widget, forms.CheckboxInput):
-                field.widget.attrs["class"] = "form-check-input"
-            else:
-                existing = field.widget.attrs.get("class", "")
-                field.widget.attrs["class"] = f"{existing} form-control".strip()
+from apps.common.forms import BootstrapFormMixin
 
 
 class RegistrationForm(BootstrapFormMixin, UserCreationForm):
