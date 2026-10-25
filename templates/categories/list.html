@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}Categories · Expense Tracker{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+    <div>
+        <h1 class="h3 mb-1">Categories</h1>
+        <p class="app-muted mb-0">Organize your transactions with categories that fit your life.</p>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+        <a class="btn btn-success" href="{% url 'categories:create' %}?type=expense">Add expense category</a>
+        <a class="btn btn-outline-success" href="{% url 'categories:create' %}?type=income">Add income category</a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card app-card h-100">
+            <div class="card-header bg-white">
+                <h2 class="h5 mb-0">Expense categories</h2>
+            </div>
+            {% if expense_categories %}
+                <ul class="list-group list-group-flush">
+                    {% for category in expense_categories %}
+                        <li class="list-group-item d-flex flex-wrap justify-content-between align-items-center gap-2">
+                            <div>
+                                <span class="fw-semibold">{{ category.name }}</span>
+                                <span class="small app-muted d-block">
+                                    <a class="text-decoration-none" href="{% url 'transactions:list' %}?category={{ category.pk }}">
+                                        {{ category.transaction_count }} transaction{{ category.transaction_count|pluralize }}
+                                    </a>
+                                </span>
+                            </div>
+                            <div class="d-flex gap-1">
+                                <a class="btn btn-sm btn-outline-secondary" href="{% url 'categories:edit' category.pk %}">Edit</a>
+                                <a class="btn btn-sm btn-outline-danger" href="{% url 'categories:delete' category.pk %}">Delete</a>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <div class="card-body text-center py-4">
+                    <p class="fw-semibold mb-1">No expense categories</p>
+                    <p class="small app-muted mb-3">Create one to organize your spending.</p>
+                    <a class="btn btn-sm btn-success" href="{% url 'categories:create' %}?type=expense">Add expense category</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card app-card h-100">
+            <div class="card-header bg-white">
+                <h2 class="h5 mb-0">Income categories</h2>
+            </div>
+            {% if income_categories %}
+                <ul class="list-group list-group-flush">
+                    {% for category in income_categories %}
+                        <li class="list-group-item d-flex flex-wrap justify-content-between align-items-center gap-2">
+                            <div>
+                                <span class="fw-semibold">{{ category.name }}</span>
+                                <span class="small app-muted d-block">
+                                    <a class="text-decoration-none" href="{% url 'transactions:list' %}?category={{ category.pk }}">
+                                        {{ category.transaction_count }} transaction{{ category.transaction_count|pluralize }}
+                                    </a>
+                                </span>
+                            </div>
+                            <div class="d-flex gap-1">
+                                <a class="btn btn-sm btn-outline-secondary" href="{% url 'categories:edit' category.pk %}">Edit</a>
+                                <a class="btn btn-sm btn-outline-danger" href="{% url 'categories:delete' category.pk %}">Delete</a>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <div class="card-body text-center py-4">
+                    <p class="fw-semibold mb-1">No income categories</p>
+                    <p class="small app-muted mb-3">Create one to organize your income.</p>
+                    <a class="btn btn-sm btn-outline-success" href="{% url 'categories:create' %}?type=income">Add income category</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<p class="small app-muted mt-3 mb-0">
+    Categories are private to your account. Categories used by transactions cannot be deleted.
+</p>
+{% endblock %}

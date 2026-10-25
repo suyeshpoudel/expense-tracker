@@ -59,7 +59,7 @@
                             {{ transaction.title }}
                         </a>
                         <div class="small app-muted">
-                            {{ transaction.get_transaction_type_display }} · {{ transaction.date|date:"M j, Y" }}
+                            {% if transaction.category %}{{ transaction.category.name }} · {% else %}Uncategorized · {% endif %}{{ transaction.get_transaction_type_display }} · {{ transaction.date|date:"M j, Y" }}
                         </div>
                     </div>
                     <span class="fw-semibold {% if transaction.transaction_type == 'expense' %}text-danger{% else %}text-success{% endif %}">

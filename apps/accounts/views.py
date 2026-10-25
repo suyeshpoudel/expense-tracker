@@ -1,8 +1,11 @@
 from django.contrib import messages
 from django.contrib.auth import login, logout
 from django.contrib.auth.views import LoginView
+from django.db import transaction
 from django.shortcuts import redirect, render
 from django.views.decorators.http import require_POST
+
+from apps.categories.services import seed_default_categories
 
 from .forms import LoginForm, RegistrationForm
 
@@ -28,7 +31,9 @@ def register(request):
     if request.method == "POST":
         form = RegistrationForm(request.POST)
         if form.is_valid():
-            user = form.save()
+            with transaction.atomic():
+                user = form.save()
+                seed_default_categories(user)
             login(request, user)
             messages.success(request, "Your account was created successfully.")
             return redirect("core:dashboard")

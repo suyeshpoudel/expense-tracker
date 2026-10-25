@@ -13,12 +13,12 @@ PAGE_SIZE = 20
 
 
 def user_transactions(user):
-    return Transaction.objects.filter(user=user)
+    return Transaction.objects.filter(user=user).select_related("category")
 
 
 @login_required
 def transaction_list(request):
-    filter_form = TransactionFilterForm(request.GET or None)
+    filter_form = TransactionFilterForm(request.GET or None, user=request.user)
     transactions = user_transactions(request.user)
 
     if filter_form.is_bound and filter_form.is_valid():
@@ -27,6 +27,8 @@ def transaction_list(request):
             transactions = transactions.filter(
                 transaction_type=filters["type"]
             )
+        if filters["category"]:
+            transactions = transactions.filter(category=filters["category"])
         if filters["date_from"]:
             transactions = transactions.filter(
                 date__gte=filters["date_from"]
@@ -81,7 +83,11 @@ def transaction_create(request):
     if requested_type in Transaction.Type.values:
         initial["transaction_type"] = requested_type
 
-    form = TransactionForm(request.POST or None, initial=initial)
+    form = TransactionForm(
+        request.POST or None,
+        user=request.user,
+        initial=initial,
+    )
 
     if request.method == "POST" and form.is_valid():
         transaction = form.save(commit=False)
@@ -104,7 +110,7 @@ def transaction_create(request):
 @login_required
 def transaction_detail(request, pk):
     transaction = get_object_or_404(
-        Transaction,
+        Transaction.objects.select_related("category"),
         pk=pk,
         user=request.user,
     )
@@ -118,11 +124,15 @@ def transaction_detail(request, pk):
 @login_required
 def transaction_edit(request, pk):
     transaction = get_object_or_404(
-        Transaction,
+        Transaction.objects.select_related("category"),
         pk=pk,
         user=request.user,
     )
-    form = TransactionForm(request.POST or None, instance=transaction)
+    form = TransactionForm(
+        request.POST or None,
+        instance=transaction,
+        user=request.user,
+    )
 
     if request.method == "POST" and form.is_valid():
         form.save()
@@ -144,7 +154,7 @@ def transaction_edit(request, pk):
 @login_required
 def transaction_delete(request, pk):
     transaction = get_object_or_404(
-        Transaction,
+        Transaction.objects.select_related("category"),
         pk=pk,
         user=request.user,
     )

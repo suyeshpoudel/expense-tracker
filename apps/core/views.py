@@ -9,7 +9,9 @@ def home(request):
 
 @login_required
 def dashboard(request):
-    recent_transactions = request.user.transactions.all()[:5]
+    recent_transactions = request.user.transactions.select_related(
+        "category"
+    )[:5]
 
     return render(
         request,

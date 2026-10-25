@@ -34,6 +34,15 @@
                     <dt class="col-sm-3">Type</dt>
                     <dd class="col-sm-9">{{ transaction.get_transaction_type_display }}</dd>
 
+                    <dt class="col-sm-3">Category</dt>
+                    <dd class="col-sm-9">
+                        {% if transaction.category %}
+                            {{ transaction.category.name }}
+                        {% else %}
+                            <span class="app-muted">Uncategorized</span>
+                        {% endif %}
+                    </dd>
+
                     <dt class="col-sm-3">Date</dt>
                     <dd class="col-sm-9">{{ transaction.date|date:"F j, Y" }}</dd>
 

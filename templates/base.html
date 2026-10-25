@@ -41,6 +41,11 @@
                                href="{% url 'transactions:list' %}">Transactions</a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link{% if request.resolver_match.namespace == 'categories' %} active{% endif %}"
+                               {% if request.resolver_match.namespace == 'categories' %}aria-current="page"{% endif %}
+                               href="{% url 'categories:list' %}">Categories</a>
+                        </li>
+                        <li class="nav-item">
                             <span class="navbar-text small text-white-50 px-md-2">{{ user.get_username }}</span>
                         </li>
                         <li class="nav-item">

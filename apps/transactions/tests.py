@@ -8,6 +8,8 @@ from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
+from apps.categories.models import Category
+
 from .models import Transaction
 
 
@@ -57,6 +59,22 @@ class TransactionModelTests(TestCase):
                     ]
                 )
 
+    def test_category_type_must_match_transaction_type(self):
+        category = Category.objects.create(
+            user=self.user,
+            category_type=Category.Type.INCOME,
+            name="Salary",
+        )
+        transaction = self.build_transaction(
+            category=category,
+            transaction_type=Transaction.Type.EXPENSE,
+        )
+
+        with self.assertRaises(ValidationError) as context:
+            transaction.full_clean()
+
+        self.assertIn("category", context.exception.message_dict)
+
     def test_transactions_are_ordered_newest_first(self):
         today = timezone.localdate()
         older = Transaction.objects.create(
@@ -89,11 +107,51 @@ class TransactionViewTestCase(TestCase):
         cls.other_user = User.objects.create_user(
             username="other", password="Str0ng-Passw0rd!23"
         )
+        cls.expense_category = Category.objects.create(
+            user=cls.user,
+            category_type=Category.Type.EXPENSE,
+            name="Food and groceries",
+        )
+        cls.income_category = Category.objects.create(
+            user=cls.user,
+            category_type=Category.Type.INCOME,
+            name="Salary",
+        )
+        cls.other_expense_category = Category.objects.create(
+            user=cls.other_user,
+            category_type=Category.Type.EXPENSE,
+            name="Food and groceries",
+        )
+        cls.other_income_category = Category.objects.create(
+            user=cls.other_user,
+            category_type=Category.Type.INCOME,
+            name="Salary",
+        )
 
     def setUp(self):
         self.client.force_login(self.user)
 
     def create_transaction(self, **overrides):
+        user = overrides.get("user", self.user)
+        transaction_type = overrides.get(
+            "transaction_type",
+            Transaction.Type.EXPENSE,
+        )
+        if "category" not in overrides:
+            if user == self.user:
+                category = (
+                    self.expense_category
+                    if transaction_type == Transaction.Type.EXPENSE
+                    else self.income_category
+                )
+            else:
+                category = (
+                    self.other_expense_category
+                    if transaction_type == Transaction.Type.EXPENSE
+                    else self.other_income_category
+                )
+            overrides["category"] = category
+
         values = {
             "user": self.user,
             "transaction_type": Transaction.Type.EXPENSE,
@@ -137,6 +195,7 @@ class TransactionCreateTests(TransactionViewTestCase):
     def valid_data(self, **overrides):
         data = {
             "transaction_type": Transaction.Type.EXPENSE,
+            "category": self.expense_category.pk,
             "amount": "1234.56",
             "title": "Monthly rent",
             "date": timezone.localdate().isoformat(),
@@ -172,10 +231,12 @@ class TransactionCreateTests(TransactionViewTestCase):
         self.assertEqual(transaction.amount, Decimal("1234.56"))
         self.assertEqual(transaction.title, "Monthly rent")
         self.assertEqual(transaction.notes, "Paid by bank transfer.")
+        self.assertEqual(transaction.category, self.expense_category)
 
     def test_create_income(self):
         data = self.valid_data(
             transaction_type=Transaction.Type.INCOME,
+            category=self.income_category.pk,
             amount="5000.00",
             title="Freelance payment",
         )
@@ -192,6 +253,7 @@ class TransactionCreateTests(TransactionViewTestCase):
             Transaction.Type.INCOME,
         )
         self.assertEqual(transaction.amount, Decimal("5000.00"))
+        self.assertEqual(transaction.category, self.income_category)
 
     def test_user_is_always_the_logged_in_user(self):
         data = {
@@ -244,6 +306,40 @@ class TransactionCreateTests(TransactionViewTestCase):
         self.assertIn("date", response.context["form"].errors)
         self.assertEqual(Transaction.objects.count(), 0)
 
+    def test_category_is_required(self):
+        data = self.valid_data()
+        data.pop("category")
+
+        response = self.client.post(self.create_url, data)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("category", response.context["form"].errors)
+        self.assertEqual(Transaction.objects.count(), 0)
+
+    def test_category_must_match_transaction_type(self):
+        response = self.client.post(
+            self.create_url,
+            self.valid_data(category=self.income_category.pk),
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("category", response.context["form"].errors)
+        self.assertContains(
+            response,
+            "Choose a category that matches the transaction type.",
+        )
+        self.assertEqual(Transaction.objects.count(), 0)
+
+    def test_other_users_category_cannot_be_used(self):
+        response = self.client.post(
+            self.create_url,
+            self.valid_data(category=self.other_expense_category.pk),
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("category", response.context["form"].errors)
+        self.assertEqual(Transaction.objects.count(), 0)
+
     def test_blank_title_is_rejected(self):
         response = self.client.post(
             self.create_url,
@@ -281,6 +377,7 @@ class TransactionDetailEditDeleteTests(TransactionViewTestCase):
             edit_url,
             {
                 "transaction_type": Transaction.Type.INCOME,
+                "category": self.income_category.pk,
                 "amount": "42.00",
                 "title": "Updated title",
                 "date": transaction.date.isoformat(),
@@ -296,6 +393,7 @@ class TransactionDetailEditDeleteTests(TransactionViewTestCase):
         self.assertEqual(transaction.transaction_type, Transaction.Type.INCOME)
         self.assertEqual(transaction.amount, Decimal("42.00"))
         self.assertEqual(transaction.title, "Updated title")
+        self.assertEqual(transaction.category, self.income_category)
         self.assertEqual(transaction.user, self.user)
 
     def test_edit_cannot_change_owner(self):
@@ -305,6 +403,7 @@ class TransactionDetailEditDeleteTests(TransactionViewTestCase):
             reverse("transactions:edit", args=[transaction.pk]),
             {
                 "transaction_type": Transaction.Type.EXPENSE,
+                "category": self.expense_category.pk,
                 "amount": "15.00",
                 "title": "Still mine",
                 "date": transaction.date.isoformat(),
@@ -377,6 +476,7 @@ class TransactionIsolationTests(TransactionViewTestCase):
             reverse("transactions:edit", args=[transaction.pk]),
             {
                 "transaction_type": Transaction.Type.INCOME,
+                "category": self.income_category.pk,
                 "amount": "999.00",
                 "title": "Hijacked",
                 "date": transaction.date.isoformat(),
@@ -409,7 +509,7 @@ class TransactionFilterTests(TransactionViewTestCase):
             date=today,
         )
         self.income_recent = self.create_transaction(
-            title="Salary",
+            title="Freelance payment",
             transaction_type=Transaction.Type.INCOME,
             amount=Decimal("500.00"),
             date=today,
@@ -435,7 +535,7 @@ class TransactionFilterTests(TransactionViewTestCase):
 
         self.assertContains(response, "Groceries")
         self.assertContains(response, "Old expense")
-        self.assertNotContains(response, "Salary")
+        self.assertNotContains(response, "Freelance payment")
 
     def test_type_filter_totals_are_filtered(self):
         response = self.client.get(
@@ -488,7 +588,44 @@ class TransactionFilterTests(TransactionViewTestCase):
 
         self.assertContains(response, "Old expense")
         self.assertNotContains(response, "Groceries")
-        self.assertNotContains(response, "Salary")
+        self.assertNotContains(response, "Freelance payment")
+
+    def test_category_filter_shows_only_matching_transactions(self):
+        transport = Category.objects.create(
+            user=self.user,
+            category_type=Category.Type.EXPENSE,
+            name="Transportation",
+        )
+        self.create_transaction(
+            title="Bus fare",
+            category=transport,
+            amount=Decimal("15.00"),
+        )
+
+        response = self.client.get(
+            self.list_url,
+            {"category": transport.pk},
+        )
+
+        self.assertContains(response, "Bus fare")
+        self.assertNotContains(response, "Groceries")
+        self.assertEqual(
+            response.context["total_expenses"],
+            Decimal("15.00"),
+        )
+
+    def test_other_users_category_filter_is_rejected(self):
+        response = self.client.get(
+            self.list_url,
+            {"category": self.other_expense_category.pk},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(
+            "category",
+            response.context["filter_form"].errors,
+        )
+        self.assertNotContains(response, "Other user expense")
 
     def test_combined_filters(self):
         response = self.client.get(
@@ -501,7 +638,7 @@ class TransactionFilterTests(TransactionViewTestCase):
 
         self.assertContains(response, "Groceries")
         self.assertNotContains(response, "Old expense")
-        self.assertNotContains(response, "Salary")
+        self.assertNotContains(response, "Freelance payment")
 
     def test_invalid_date_range_shows_error(self):
         today = timezone.localdate()
@@ -565,6 +702,7 @@ class TransactionPaginationTests(TransactionViewTestCase):
                 transaction_type=Transaction.Type.EXPENSE,
                 amount=Decimal("10.00"),
                 title=f"Transaction {index:02d}",
+                category=cls.expense_category,
                 date=today - timedelta(days=index),
             )
 
