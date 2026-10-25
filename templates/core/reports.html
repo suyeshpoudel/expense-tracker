@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Reports · Expense Tracker{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h1 class="h3 mb-1">Reports</h1>
+    <p class="app-muted mb-0">Review spending and cash flow over any date range. Both dates are included.</p>
+</div>
+
+<form method="get" class="card app-card mb-4" novalidate>
+    <div class="card-body">
+        {% if form.non_field_errors %}
+            <div class="alert alert-danger" role="alert">
+                {{ form.non_field_errors }}
+            </div>
+        {% endif %}
+
+        <div class="row g-3 align-items-start">
+            <div class="col-sm-6 col-lg-3">
+                <label class="form-label" for="{{ form.date_from.id_for_label }}">{{ form.date_from.label }}</label>
+                {{ form.date_from }}
+                {% for error in form.date_from.errors %}
+                    <div class="invalid-feedback d-block">{{ error }}</div>
+                {% endfor %}
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <label class="form-label" for="{{ form.date_to.id_for_label }}">{{ form.date_to.label }}</label>
+                {{ form.date_to }}
+                {% for error in form.date_to.errors %}
+                    <div class="invalid-feedback d-block">{{ error }}</div>
+                {% endfor %}
+            </div>
+            <div class="col-lg-6 d-flex align-items-end gap-2">
+                <button class="btn btn-success" type="submit">Apply filters</button>
+                {% if form.is_bound %}
+                    <a class="btn btn-outline-secondary" href="{% url 'core:reports' %}">Reset</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</form>
+
+{% if show_report %}
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card h-100 app-card">
+                <div class="card-body">
+                    <p class="small text-uppercase app-muted mb-1">Expenses</p>
+                    <p class="h3 mb-1 text-danger">{{ CURRENCY_CODE }} {{ total_expenses|floatformat:2 }}</p>
+                    <p class="small app-muted mb-0">{{ period_label }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 app-card">
+                <div class="card-body">
+                    <p class="small text-uppercase app-muted mb-1">Income</p>
+                    <p class="h3 mb-1 text-success">{{ CURRENCY_CODE }} {{ total_income|floatformat:2 }}</p>
+                    <p class="small app-muted mb-0">{{ period_label }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 app-card">
+                <div class="card-body">
+                    <p class="small text-uppercase app-muted mb-1">Net cash flow</p>
+                    <p class="h3 mb-1 {% if net_total < 0 %}text-danger{% elif net_total > 0 %}text-success{% endif %}">
+                        {{ CURRENCY_CODE }} {{ net_total|floatformat:2 }}
+                    </p>
+                    <p class="small app-muted mb-0">{{ period_label }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-lg-5">
+            {% include "includes/category_breakdown_card.html" %}
+        </div>
+        <div class="col-lg-7">
+            {% include "includes/trend_card.html" %}
+        </div>
+    </div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+    {% if show_report and has_expenses %}
+        <script src="{% static 'vendor/chartjs/chart.umd.min.js' %}"></script>
+        <script src="{% static 'js/charts.js' %}"></script>
+    {% endif %}
+{% endblock %}

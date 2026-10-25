@@ -36,6 +36,11 @@
                                href="{% url 'core:dashboard' %}">Dashboard</a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link{% if request.resolver_match.url_name == 'reports' %} active{% endif %}"
+                               {% if request.resolver_match.url_name == 'reports' %}aria-current="page"{% endif %}
+                               href="{% url 'core:reports' %}">Reports</a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link{% if request.resolver_match.namespace == 'transactions' %} active{% endif %}"
                                {% if request.resolver_match.namespace == 'transactions' %}aria-current="page"{% endif %}
                                href="{% url 'transactions:list' %}">Transactions</a>

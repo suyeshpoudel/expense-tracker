@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}Dashboard · Expense Tracker{% endblock %}
 
@@ -6,7 +7,10 @@
 <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-4">
     <div>
         <h1 class="h3 mb-1">Dashboard</h1>
-        <p class="app-muted mb-0">{{ month_label }}</p>
+        <p class="app-muted mb-0">
+            {{ month_label }} ·
+            <a class="text-decoration-none" href="{% url 'core:reports' %}">View detailed reports</a>
+        </p>
     </div>
     <div class="text-md-end">
         <span class="app-muted small d-block">Signed in as</span>
@@ -15,32 +19,52 @@
 </div>
 
 <div class="row g-3 mb-4">
-    <div class="col-md-4">
+    <div class="col-sm-6 col-xl-3">
         <div class="card h-100 app-card">
             <div class="card-body">
                 <p class="small text-uppercase app-muted mb-2">Expenses this month</p>
-                <p class="display-6 fw-semibold mb-1">&mdash;</p>
-                <p class="small app-muted mb-0">Monthly totals are not available yet.</p>
+                <p class="fs-3 fw-semibold mb-1 text-danger">{{ CURRENCY_CODE }} {{ total_expenses|floatformat:2 }}</p>
+                <p class="small app-muted mb-0">Money spent during {{ month_label }}.</p>
             </div>
         </div>
     </div>
-    <div class="col-md-4">
+    <div class="col-sm-6 col-xl-3">
         <div class="card h-100 app-card">
             <div class="card-body">
                 <p class="small text-uppercase app-muted mb-2">Income this month</p>
-                <p class="display-6 fw-semibold mb-1">&mdash;</p>
-                <p class="small app-muted mb-0">Monthly totals are not available yet.</p>
+                <p class="fs-3 fw-semibold mb-1 text-success">{{ CURRENCY_CODE }} {{ total_income|floatformat:2 }}</p>
+                <p class="small app-muted mb-0">Money received during {{ month_label }}.</p>
             </div>
         </div>
     </div>
-    <div class="col-md-4">
+    <div class="col-sm-6 col-xl-3">
+        <div class="card h-100 app-card">
+            <div class="card-body">
+                <p class="small text-uppercase app-muted mb-2">Net cash flow</p>
+                <p class="fs-3 fw-semibold mb-1 {% if net_total < 0 %}text-danger{% elif net_total > 0 %}text-success{% endif %}">
+                    {{ CURRENCY_CODE }} {{ net_total|floatformat:2 }}
+                </p>
+                <p class="small app-muted mb-0">Income minus expenses for {{ month_label }}.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
         <div class="card h-100 app-card">
             <div class="card-body">
                 <p class="small text-uppercase app-muted mb-2">Remaining budget</p>
-                <p class="display-6 fw-semibold mb-1">&mdash;</p>
+                <p class="fs-3 fw-semibold mb-1">&mdash;</p>
                 <p class="small app-muted mb-0">No budget configured yet.</p>
             </div>
         </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-lg-5">
+        {% include "includes/category_breakdown_card.html" %}
+    </div>
+    <div class="col-lg-7">
+        {% include "includes/trend_card.html" %}
     </div>
 </div>
 
@@ -76,4 +100,11 @@
         </div>
     {% endif %}
 </div>
+{% endblock %}
+
+{% block extra_js %}
+    {% if has_expenses or trend_has_data %}
+        <script src="{% static 'vendor/chartjs/chart.umd.min.js' %}"></script>
+        <script src="{% static 'js/charts.js' %}"></script>
+    {% endif %}
 {% endblock %}

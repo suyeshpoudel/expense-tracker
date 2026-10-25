@@ -64,6 +64,16 @@ body {
     color: var(--app-muted);
 }
 
+.app-chart {
+    position: relative;
+    min-height: 200px;
+}
+
+details > summary {
+    color: var(--app-accent);
+    cursor: pointer;
+}
+
 .app-footer {
     color: var(--app-muted);
     border-top: 1px solid var(--app-border);
