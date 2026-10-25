@@ -30,6 +30,16 @@ body {
     color: #fff;
 }
 
+.app-navbar .btn-link.nav-link {
+    color: rgba(255, 255, 255, 0.85);
+    text-decoration: none;
+}
+
+.app-navbar .btn-link.nav-link:hover,
+.app-navbar .btn-link.nav-link:focus {
+    color: #fff;
+}
+
 .app-hero {
     background-color: #ffffff;
     border: 1px solid var(--app-border);

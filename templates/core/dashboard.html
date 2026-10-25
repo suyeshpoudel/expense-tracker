@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard · Expense Tracker{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-4">
+    <div>
+        <h1 class="h3 mb-1">Dashboard</h1>
+        <p class="app-muted mb-0">{{ month_label }}</p>
+    </div>
+    <div class="text-md-end">
+        <span class="app-muted small d-block">Signed in as</span>
+        <span class="fw-semibold">{{ user.get_username }}</span>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card h-100 app-card">
+            <div class="card-body">
+                <p class="small text-uppercase app-muted mb-2">Expenses this month</p>
+                <p class="display-6 fw-semibold mb-1">&mdash;</p>
+                <p class="small app-muted mb-0">No expenses recorded yet.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100 app-card">
+            <div class="card-body">
+                <p class="small text-uppercase app-muted mb-2">Income this month</p>
+                <p class="display-6 fw-semibold mb-1">&mdash;</p>
+                <p class="small app-muted mb-0">No income recorded yet.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100 app-card">
+            <div class="card-body">
+                <p class="small text-uppercase app-muted mb-2">Remaining budget</p>
+                <p class="display-6 fw-semibold mb-1">&mdash;</p>
+                <p class="small app-muted mb-0">No budget configured yet.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card app-card">
+    <div class="card-header bg-white">
+        <h2 class="h5 mb-0">Recent transactions</h2>
+    </div>
+    <div class="card-body text-center py-5">
+        <p class="fw-semibold mb-1">No transactions recorded yet</p>
+        <p class="small app-muted mb-0">Your latest activity will appear here.</p>
+    </div>
+</div>
+{% endblock %}

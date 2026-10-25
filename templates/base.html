@@ -23,10 +23,39 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="main-navigation">
-                <ul class="navbar-nav ms-auto">
+                <ul class="navbar-nav ms-auto align-items-md-center">
                     <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="{% url 'core:home' %}">Home</a>
+                        <a class="nav-link{% if request.resolver_match.url_name == 'home' %} active{% endif %}"
+                           {% if request.resolver_match.url_name == 'home' %}aria-current="page"{% endif %}
+                           href="{% url 'core:home' %}">Home</a>
                     </li>
+                    {% if user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link{% if request.resolver_match.url_name == 'dashboard' %} active{% endif %}"
+                               {% if request.resolver_match.url_name == 'dashboard' %}aria-current="page"{% endif %}
+                               href="{% url 'core:dashboard' %}">Dashboard</a>
+                        </li>
+                        <li class="nav-item">
+                            <span class="navbar-text small text-white-50 px-md-2">{{ user.get_username }}</span>
+                        </li>
+                        <li class="nav-item">
+                            <form method="post" action="{% url 'accounts:logout' %}">
+                                {% csrf_token %}
+                                <button class="btn btn-link nav-link" type="submit">Log out</button>
+                            </form>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link{% if request.resolver_match.url_name == 'login' %} active{% endif %}"
+                               {% if request.resolver_match.url_name == 'login' %}aria-current="page"{% endif %}
+                               href="{% url 'accounts:login' %}">Log in</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link{% if request.resolver_match.url_name == 'register' %} active{% endif %}"
+                               {% if request.resolver_match.url_name == 'register' %}aria-current="page"{% endif %}
+                               href="{% url 'accounts:register' %}">Register</a>
+                        </li>
+                    {% endif %}
                 </ul>
             </div>
         </div>

@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Create account · Expense Tracker{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-7 col-lg-5">
+        <div class="card app-card shadow-sm">
+            <div class="card-body p-4">
+                <h1 class="h3 mb-1">Create your account</h1>
+                <p class="app-muted small mb-4">Your financial records stay private to you.</p>
+
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger" role="alert">
+                        {{ form.non_field_errors }}
+                    </div>
+                {% endif %}
+
+                <form method="post" class="app-form" novalidate>
+                    {% csrf_token %}
+
+                    {% for field in form %}
+                        <div class="mb-3">
+                            <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                            {{ field }}
+                            {% for error in field.errors %}
+                                <div class="invalid-feedback d-block">{{ error }}</div>
+                            {% endfor %}
+                            {% if field.help_text %}
+                                <div class="form-text">{{ field.help_text|safe }}</div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+
+                    <button class="btn btn-success w-100" type="submit">Create account</button>
+                </form>
+
+                <p class="small mt-3 mb-0">
+                    Already registered? <a href="{% url 'accounts:login' %}">Log in</a>.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

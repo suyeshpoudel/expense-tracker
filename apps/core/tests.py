@@ -1,3 +1,4 @@
+from django.contrib.auth.models import User
 from django.test import TestCase
 from django.urls import reverse
 
@@ -15,3 +16,60 @@ class HomePageTests(TestCase):
 
         self.assertContains(response, "css/app.css")
         self.assertContains(response, "vendor/bootstrap/bootstrap.min.css")
+
+    def test_anonymous_home_page_shows_auth_links(self):
+        response = self.client.get(reverse("core:home"))
+
+        self.assertContains(response, reverse("accounts:login"))
+        self.assertContains(response, reverse("accounts:register"))
+        self.assertNotContains(response, reverse("core:dashboard"))
+
+    def test_authenticated_home_page_shows_navigation(self):
+        user = User.objects.create_user(
+            username="suyesh", password="Str0ng-Passw0rd!23"
+        )
+        self.client.force_login(user)
+
+        response = self.client.get(reverse("core:home"))
+
+        self.assertContains(response, reverse("core:dashboard"))
+        self.assertContains(response, reverse("accounts:logout"))
+        self.assertContains(response, "Log out")
+
+
+class DashboardTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = User.objects.create_user(
+            username="suyesh", password="Str0ng-Passw0rd!23"
+        )
+
+    def test_anonymous_user_is_redirected_to_login(self):
+        dashboard_url = reverse("core:dashboard")
+
+        response = self.client.get(dashboard_url)
+
+        self.assertRedirects(
+            response,
+            f"{reverse('accounts:login')}?next={dashboard_url}",
+        )
+
+    def test_dashboard_renders_for_authenticated_user(self):
+        self.client.force_login(self.user)
+
+        response = self.client.get(reverse("core:dashboard"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "core/dashboard.html")
+        self.assertContains(response, "No expenses recorded yet.")
+        self.assertContains(response, "No income recorded yet.")
+        self.assertContains(response, "No budget configured yet.")
+        self.assertContains(response, "No transactions recorded yet")
+
+    def test_dashboard_does_not_show_fabricated_totals(self):
+        self.client.force_login(self.user)
+
+        response = self.client.get(reverse("core:dashboard"))
+
+        self.assertNotContains(response, "NPR")
+        self.assertNotContains(response, "0.00")
