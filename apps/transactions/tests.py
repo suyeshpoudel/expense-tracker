@@ -75,6 +75,22 @@ class TransactionModelTests(TestCase):
 
         self.assertIn("category", context.exception.message_dict)
 
+    def test_category_owner_must_match_transaction_owner(self):
+        other_user = User.objects.create_user(
+            username="other", password="Str0ng-Passw0rd!23"
+        )
+        other_category = Category.objects.create(
+            user=other_user,
+            category_type=Category.Type.EXPENSE,
+            name="Other category",
+        )
+        transaction = self.build_transaction(category=other_category)
+
+        with self.assertRaises(ValidationError) as context:
+            transaction.full_clean()
+
+        self.assertIn("category", context.exception.message_dict)
+
     def test_transactions_are_ordered_newest_first(self):
         today = timezone.localdate()
         older = Transaction.objects.create(

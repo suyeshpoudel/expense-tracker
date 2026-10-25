@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block title %}Bad request · Expense Tracker{% endblock %}
+
+{% block content %}
+<div class="text-center py-5">
+    <p class="display-5 fw-semibold mb-2">400</p>
+    <h1 class="h3 mb-2">Bad request</h1>
+    <p class="app-muted mb-4">The request could not be understood. Please check the address and try again.</p>
+    <a class="btn btn-success" href="{% url 'core:home' %}">Go home</a>
+</div>
+{% endblock %}

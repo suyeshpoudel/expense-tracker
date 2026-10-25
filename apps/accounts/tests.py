@@ -1,5 +1,5 @@
 from django.contrib.auth.models import User
-from django.test import TestCase
+from django.test import Client, TestCase
 from django.urls import reverse
 
 
@@ -134,3 +134,12 @@ class AuthenticationTests(TestCase):
 
         self.assertRedirects(response, reverse("core:home"))
         self.assertNotIn("_auth_user_id", self.client.session)
+
+    def test_logout_requires_a_csrf_token(self):
+        client = Client(enforce_csrf_checks=True)
+        client.force_login(self.user)
+
+        response = client.post(reverse("accounts:logout"))
+
+        self.assertEqual(response.status_code, 403)
+        self.assertIn("_auth_user_id", client.session)

@@ -62,6 +62,18 @@ class Transaction(models.Model):
         super().clean()
         if (
             self.category_id
+            and self.user_id
+            and self.category.user_id != self.user_id
+        ):
+            raise ValidationError(
+                {
+                    "category": (
+                        "Category must belong to the transaction owner."
+                    )
+                }
+            )
+        if (
+            self.category_id
             and self.transaction_type
             and self.category.category_type != self.transaction_type
         ):
