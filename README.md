@@ -2,7 +2,8 @@
 
 A server-rendered personal expense tracker built with Django. The project is
 being developed incrementally; the current state includes user accounts, a
-login-protected dashboard, and full expense/income transaction management.
+login-protected dashboard, expense/income transactions, and category
+management.
 
 ## Stack
 
@@ -22,6 +23,7 @@ source .venv/bin/activate
 python -m pip install --upgrade pip
 pip install -r requirements.txt
 python manage.py migrate
+python manage.py seed_default_categories  # existing users only
 python manage.py runserver
 ```
 
@@ -53,6 +55,10 @@ automatically. Export the values in your shell or use your process manager.
 | `/transactions/<id>/` | Transaction details | Owner only |
 | `/transactions/<id>/edit/` | Edit a transaction | Owner only |
 | `/transactions/<id>/delete/` | Delete confirmation | Owner only |
+| `/categories/` | Category list and usage counts | Logged-in users |
+| `/categories/new/` | Add an expense or income category | Logged-in users |
+| `/categories/<id>/edit/` | Rename a category | Owner only |
+| `/categories/<id>/delete/` | Delete confirmation | Owner only |
 | `/admin/` | Django admin | Staff users |
 
 ## Tests and checks
@@ -67,10 +73,11 @@ python manage.py test
 ```
 config/                 Project settings and root URL configuration
 apps/accounts/          Registration, login and logout
+apps/categories/        Category model, defaults, forms and views
 apps/core/              Home page, dashboard and shared context
 apps/transactions/      Transaction model, forms, views and tests
 apps/common/            Shared form helpers
-templates/              Shared, account, dashboard and transaction templates
+templates/              Shared, account, dashboard, transaction and category templates
 static/css/             Application styles
 static/vendor/          Vendored Bootstrap CSS/JS and license
 requirements.txt        Python dependencies
@@ -88,7 +95,7 @@ Project conventions:
 - [x] Milestone 0 - Project planning and setup
 - [x] Milestone 1 - Authentication and personal dashboard
 - [x] Milestone 2 - Expense and income transactions
-- [ ] Milestone 3 - Category management
+- [x] Milestone 3 - Category management
 - [ ] Milestone 4 - Dashboard calculations and reports
 - [ ] Milestone 5 - Monthly budgets
 - [ ] Milestone 6 - Search, filtering, and user experience
@@ -98,8 +105,9 @@ Project conventions:
 
 - The repository previously contained an unused Laravel scaffold. It was
   removed before Django was initialized; the history remains in Git.
-- NPR is the intended display currency, configured as `CURRENCY_CODE = "NPR"`.
-  It is not yet shown in the UI and can become per-user configuration later.
+- NPR is the display currency, configured as `CURRENCY_CODE = "NPR"` and
+  exposed through a template context processor. It can become per-user
+  configuration later.
 - The default timezone is `Asia/Kathmandu`.
 - Bootstrap is vendored in `static/vendor/bootstrap` so the application works
   offline and does not depend on a CDN at runtime.
@@ -108,8 +116,8 @@ Project conventions:
 - Registration uses Django's `UserCreationForm`, with an optional email field.
   A successful registration logs the user in and redirects to the dashboard.
 - Logout is a POST request from the navigation bar, protected by CSRF.
-- The dashboard shows em dashes and empty states rather than zero values until
-  transaction data exists.
+- The dashboard shows real recent transactions but keeps monthly totals as
+  honest placeholders until Milestone 4.
 - Registration is open to anyone who can reach the site. Restricting or closing
   registration should be considered before any public deployment.
 - Transaction amounts are stored as `DecimalField(max_digits=12,
@@ -119,7 +127,21 @@ Project conventions:
   be relaxed later if planned transactions become a feature.
 - The transaction list shows totals for the active filter and uses 20 items per
   page. The dashboard's monthly totals remain placeholders until Milestone 4.
-- Categories are intentionally deferred to Milestone 3. The transaction model
-  will gain a category relationship in that milestone.
-- Users can only list, view, edit, or delete their own transactions; owner
-  lookups use `get_object_or_404` scoped to the logged-in user.
+- Categories are user-owned, including the default categories, so one user's
+  renames and deletions never affect another user.
+- New accounts receive 10 expense and 6 income default categories inside the
+  registration transaction. The `seed_default_categories` management command
+  adds missing defaults for existing users using `get_or_create`, so it is
+  repeatable and does not create duplicates. Running it again can recreate a
+  default category that was intentionally deleted.
+- Categories used by transactions cannot be deleted (`PROTECT`); transaction
+  history is preserved. Users must reassign or delete those transactions first.
+- Category names are unique per user and type, and form validation treats names
+  case-insensitively. Category type cannot be changed after creation.
+- The transaction form requires a category matching the transaction type.
+  Transactions recorded before categories existed remain in the database as
+  uncategorized and are labeled that way in the UI.
+- Users can only list, view, edit, or delete their own transactions and
+  categories; owner lookups use `get_object_or_404` scoped to the logged-in user.
+- The transaction list can be filtered by type, category, and date range, and
+  pagination preserves those filters.
