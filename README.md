@@ -3,7 +3,8 @@
 A server-rendered personal expense tracker built with Django. The project is
 being developed incrementally; the current state includes user accounts, a
 login-protected dashboard, expense/income transactions, category management,
-monthly budgets, and reports with charts.
+monthly budgets, searchable and filterable transactions, and reports with
+charts and quick date ranges.
 
 ## Stack
 
@@ -51,7 +52,7 @@ automatically. Export the values in your shell or use your process manager.
 | `/accounts/login/` | Log in | Public |
 | `/accounts/logout/` | Log out (POST only) | Any |
 | `/dashboard/` | Personal dashboard and spending overview | Logged-in users |
-| `/reports/` | Date-range income, expense, category and trend reports | Logged-in users |
+| `/reports/` | Date-range reports with quick presets | Logged-in users |
 | `/budgets/` | Monthly budgets and spending usage | Logged-in users |
 | `/budgets/new/` | Set a budget for a month | Logged-in users |
 | `/budgets/<id>/edit/` | Edit a monthly budget | Owner only |
@@ -106,7 +107,7 @@ Project conventions:
 - [x] Milestone 3 - Category management
 - [x] Milestone 4 - Dashboard calculations and reports
 - [x] Milestone 5 - Monthly budgets
-- [ ] Milestone 6 - Search, filtering, and user experience
+- [x] Milestone 6 - Search, filtering, and user experience
 - [ ] Milestone 7 - Testing, security, and release preparation
 
 ## Decisions and assumptions
@@ -156,8 +157,15 @@ Project conventions:
 - Users can only list, view, edit, or delete their own transactions,
   categories, and budgets; owner lookups use `get_object_or_404` scoped to the
   logged-in user.
-- The transaction list can be filtered by type, category, and date range, and
-  pagination preserves those filters.
+- The transaction list supports a case-insensitive search across titles,
+  notes, and category names; type, category, date, and inclusive amount-range
+  filters; and sorting by date, amount, or title. Totals reflect every active
+  filter, and pagination preserves all filter and sort parameters. Choosing a
+  sort order alone does not mark results as filtered. Amount range bounds must
+  be zero or greater, with the maximum on or after the minimum.
+- The reports page includes quick ranges for this month, last month, the last
+  30 days, and year to date. The custom inclusive date-range form remains
+  available, and the active preset is highlighted.
 - Income and expense totals are calculated separately and never mixed. Net cash
   flow is income minus expenses, and expense category breakdowns and trends
   exclude income transactions.
