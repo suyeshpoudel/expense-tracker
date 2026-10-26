@@ -241,7 +241,8 @@
                     <div class="topbar-actions">
                         <div class="dropdown user-menu">
                             <button class="user-menu-toggle" type="button" id="navbar-user-menu"
-                                    data-bs-toggle="dropdown" aria-expanded="false"
+                                    data-bs-toggle="dropdown" data-bs-auto-close="outside"
+                                    aria-expanded="false"
                                     aria-label="Account menu for {{ user.get_username }}">
                                 <span class="sidebar-avatar" aria-hidden="true">{{ user.get_username|first|upper }}</span>
                                 <span class="user-menu-name">{{ user.get_full_name|default:user.get_username }}</span>
