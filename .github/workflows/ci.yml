@@ -35,20 +35,20 @@ jobs:
       - name: Run production security checks
         env:
           DJANGO_DEBUG: "false"
-          DJANGO_SECRET_KEY: ci-only-secret-key-that-is-long-enough-1234567890
-          DJANGO_ALLOWED_HOSTS: example.com
+          DJANGO_SECRET_KEY: !1+^u*#qj1(llmeipzl*9g^0w&g%9-#l#rezx_=5iq8n*pt4(s
+          DJANGO_ALLOWED_HOSTS: .vercel.app,.suyesh.com.np
         run: python manage.py check --deploy
 
       - name: Collect static files
         env:
           DJANGO_DEBUG: "false"
-          DJANGO_SECRET_KEY: ci-only-secret-key-that-is-long-enough-1234567890
-          DJANGO_ALLOWED_HOSTS: example.com
+          DJANGO_SECRET_KEY: !1+^u*#qj1(llmeipzl*9g^0w&g%9-#l#rezx_=5iq8n*pt4(s
+          DJANGO_ALLOWED_HOSTS: .vercel.app,.suyesh.com.np
         run: python manage.py collectstatic --noinput
 
       - name: Validate the WSGI application
         env:
           DJANGO_DEBUG: "false"
-          DJANGO_SECRET_KEY: ci-only-secret-key-that-is-long-enough-1234567890
-          DJANGO_ALLOWED_HOSTS: example.com
+          DJANGO_SECRET_KEY: !1+^u*#qj1(llmeipzl*9g^0w&g%9-#l#rezx_=5iq8n*pt4(s
+          DJANGO_ALLOWED_HOSTS: .vercel.app,.suyesh.com.np
         run: gunicorn --check-config config.wsgi:application
