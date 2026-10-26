@@ -3,14 +3,14 @@
 {% block title %}Security check failed · Expense Tracker{% endblock %}
 
 {% block content %}
-<div class="text-center py-5">
-    <p class="display-5 fw-semibold mb-2">403</p>
-    <h1 class="h3 mb-2">Security check failed</h1>
-    <p class="app-muted mb-4">This form expired or the request could not be verified. Go back, reload the page, and try again.</p>
-    {% if user.is_authenticated %}
-        <a class="btn btn-success" href="{% url 'core:dashboard' %}">Go to dashboard</a>
-    {% else %}
-        <a class="btn btn-success" href="{% url 'core:home' %}">Go home</a>
-    {% endif %}
+<div class="error-shell">
+    <div class="error-card">
+        <span class="error-code">403</span>
+        <h1 class="error-title">Security check failed</h1>
+        <p class="error-text">This form could not be verified. Refresh the page and try again.</p>
+        <div class="error-actions">
+            <a class="button button--primary" href="{% url 'core:home' %}">Go to home</a>
+        </div>
+    </div>
 </div>
 {% endblock %}

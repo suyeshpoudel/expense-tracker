@@ -1,34 +1,43 @@
 {% extends "base.html" %}
 
 {% block title %}Delete transaction · Expense Tracker{% endblock %}
+{% block topbar_label %}Transactions{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-lg-7">
-        <div class="card app-card shadow-sm border-danger">
-            <div class="card-body p-4">
-                <h1 class="h3 mb-2">Delete this transaction?</h1>
-                <p class="app-muted">This action cannot be undone.</p>
+<div class="confirm-card">
+    <div class="confirm-body">
+        <span class="confirm-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                 stroke-linecap="round" stroke-linejoin="round" focusable="false">
+                <path d="M3 6h18"></path>
+                <path d="M8 6V4h8v2"></path>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path>
+                <path d="M10 11v6"></path>
+                <path d="M14 11v6"></path>
+            </svg>
+        </span>
+        <h1 class="confirm-title">Delete this transaction?</h1>
+        <p class="confirm-text">This action cannot be undone. The entry will be permanently removed from your history.</p>
 
-                <div class="border rounded-3 p-3 my-4">
-                    <div class="d-flex flex-wrap justify-content-between gap-2">
-                        <div>
-                            <p class="fw-semibold mb-1">{{ transaction.title }}</p>
-                            <p class="small app-muted mb-0">
-                                {{ transaction.get_transaction_type_display }} · {{ transaction.date|date:"F j, Y" }}
-                            </p>
-                        </div>
-                        <p class="fw-semibold mb-0">{{ CURRENCY_CODE }} {{ transaction.amount|floatformat:2 }}</p>
-                    </div>
+        <div class="confirm-summary">
+            <div class="confirm-summary-row">
+                <div>
+                    <p class="confirm-summary-title">{{ transaction.title }}</p>
+                    <p class="confirm-summary-meta">
+                        {{ transaction.get_transaction_type_display }} &middot; {{ transaction.date|date:"F j, Y" }}
+                    </p>
                 </div>
-
-                <form method="post" class="d-flex flex-wrap gap-2">
-                    {% csrf_token %}
-                    <button class="btn btn-danger" type="submit">Delete transaction</button>
-                    <a class="btn btn-outline-secondary" href="{% url 'transactions:detail' transaction.pk %}">Cancel</a>
-                </form>
+                <span class="confirm-summary-amount">
+                    {% if transaction.transaction_type == "expense" %}&minus;{% else %}+{% endif %}{{ CURRENCY_CODE }} {{ transaction.amount|floatformat:2 }}
+                </span>
             </div>
         </div>
+
+        <form method="post" class="confirm-actions">
+            {% csrf_token %}
+            <button class="button button--danger" type="submit">Delete transaction</button>
+            <a class="button button--secondary" href="{% url 'transactions:detail' transaction.pk %}">Cancel</a>
+        </form>
     </div>
 </div>
 {% endblock %}

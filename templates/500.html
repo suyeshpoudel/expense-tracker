@@ -1,21 +1,16 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Something went wrong · Expense Tracker</title>
-    <link rel="stylesheet" href="{% static 'vendor/bootstrap/bootstrap.min.css' %}">
-    <link rel="stylesheet" href="{% static 'css/app.css' %}">
-</head>
-<body class="d-flex flex-column min-vh-100">
-    <main class="container py-5 flex-grow-1">
-        <div class="text-center py-5">
-            <p class="display-5 fw-semibold mb-2">500</p>
-            <h1 class="h3 mb-2">Something went wrong</h1>
-            <p class="app-muted mb-4">An unexpected error occurred. Please try again in a moment.</p>
-            <a class="btn btn-success" href="/">Go home</a>
+{% extends "base.html" %}
+
+{% block title %}Something went wrong · Expense Tracker{% endblock %}
+
+{% block content %}
+<div class="error-shell">
+    <div class="error-card">
+        <span class="error-code">500</span>
+        <h1 class="error-title">Something went wrong</h1>
+        <p class="error-text">An unexpected error occurred. Please try again in a moment.</p>
+        <div class="error-actions">
+            <a class="button button--primary" href="{% url 'core:home' %}">Go to home</a>
         </div>
-    </main>
-</body>
-</html>
+    </div>
+</div>
+{% endblock %}

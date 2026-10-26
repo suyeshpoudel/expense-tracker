@@ -10,10 +10,7 @@ from apps.common.forms import BootstrapFormMixin
 
 
 class RegistrationForm(BootstrapFormMixin, UserCreationForm):
-    email = forms.EmailField(
-        required=False,
-        help_text="Optional.",
-    )
+    email = forms.EmailField(required=False)
 
     class Meta(UserCreationForm.Meta):
         model = User

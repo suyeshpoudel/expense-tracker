@@ -3,185 +3,238 @@
 {% block title %}Expense Tracker · Personal finance, kept simple{% endblock %}
 
 {% block content %}
-<section class="landing-hero p-4 p-md-5 rounded-4 mb-5">
-    <div class="row align-items-center g-4">
-        <div class="col-lg-7">
-            <p class="text-uppercase small fw-semibold app-eyebrow mb-2">Personal finance</p>
-            <h1 class="display-5 fw-bold mb-3">
-                Know where your money goes.
-            </h1>
-            <p class="lead app-muted mb-4">
-                Record expenses and income, organize them by category, and track
-                your monthly spending against a budget &mdash; all in one calm,
-                focused place.
-            </p>
-            <div class="d-flex flex-wrap gap-2">
-                <a class="btn btn-success btn-lg px-4" href="{% url 'accounts:register' %}">
-                    Create free account
-                </a>
-                <a class="btn btn-outline-success btn-lg px-4" href="{% url 'accounts:login' %}">
-                    Log in
-                </a>
-            </div>
-            <p class="small app-muted mt-3 mb-0">
-                No spreadsheets. No clutter. Just a clear picture of your spending.
-            </p>
+<section class="landing-hero">
+    <div class="landing-hero-copy">
+        <p class="page-eyebrow">Personal finance, without the clutter</p>
+        <h1 class="landing-title">Know where your money goes. Without the spreadsheet.</h1>
+        <p class="landing-lead">
+            Record everyday expenses and income, set a monthly budget, and read the story behind your spending — all in one calm, private workspace.
+        </p>
+        <div class="landing-actions">
+            <a class="button button--primary button--lg" href="{% url 'accounts:register' %}">Create free account</a>
+            <a class="button button--secondary button--lg" href="{% url 'core:home' %}#how-it-works">See how it works</a>
         </div>
-        <div class="col-lg-5">
-            <div class="landing-preview card app-card shadow-sm" aria-hidden="true">
-                <div class="card-body p-4">
-                    <p class="small text-uppercase app-muted mb-3">A clearer view of your month</p>
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <span class="app-muted small">Total expenses</span>
-                        <span class="fw-semibold text-danger">{{ CURRENCY_CODE }} 1,284.50</span>
+        <p class="landing-assurance">No card required. Your data stays private to your account.</p>
+    </div>
+
+    <div class="landing-visual" aria-hidden="true">
+        <div class="preview-window">
+            <div class="preview-topbar">
+                <span class="preview-brand-mark"></span>
+                <span class="preview-brand-name">Expense Tracker</span>
+                <span class="preview-avatar"></span>
+            </div>
+            <div class="preview-layout">
+                <div class="preview-sidebar">
+                    <span class="preview-nav-dot preview-nav-dot--active"></span>
+                    <span class="preview-nav-line preview-nav-line--wide"></span>
+                    <span class="preview-nav-dot"></span>
+                    <span class="preview-nav-line"></span>
+                    <span class="preview-nav-dot"></span>
+                    <span class="preview-nav-line preview-nav-line--short"></span>
+                </div>
+                <div class="preview-main">
+                    <div class="preview-heading">
+                        <span class="preview-kicker"></span>
+                        <span class="preview-title-line"></span>
                     </div>
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <span class="app-muted small">Income</span>
-                        <span class="fw-semibold text-success">{{ CURRENCY_CODE }} 3,200.00</span>
+                    <div class="preview-summary">
+                        <div class="preview-summary-cell">
+                            <span class="preview-label-line"></span>
+                            <span class="preview-value-line preview-value-line--accent"></span>
+                        </div>
+                        <div class="preview-summary-cell">
+                            <span class="preview-label-line"></span>
+                            <span class="preview-value-line"></span>
+                        </div>
+                        <div class="preview-summary-cell">
+                            <span class="preview-label-line"></span>
+                            <span class="preview-value-line"></span>
+                        </div>
                     </div>
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <span class="app-muted small">Net cash flow</span>
-                        <span class="fw-semibold text-success">{{ CURRENCY_CODE }} 1,915.50</span>
+                    <div class="preview-panels">
+                        <div class="preview-panel">
+                            <span class="preview-panel-title"></span>
+                            <div class="preview-bars">
+                                <span style="height: 38%"></span>
+                                <span style="height: 62%"></span>
+                                <span style="height: 46%"></span>
+                                <span style="height: 74%"></span>
+                                <span style="height: 58%"></span>
+                                <span style="height: 84%"></span>
+                            </div>
+                        </div>
+                        <div class="preview-panel">
+                            <span class="preview-panel-title"></span>
+                            <div class="preview-progress-list">
+                                <span class="preview-progress preview-progress--one"></span>
+                                <span class="preview-progress preview-progress--two"></span>
+                                <span class="preview-progress preview-progress--three"></span>
+                            </div>
+                        </div>
                     </div>
-                    <div class="landing-preview-bars d-flex align-items-end gap-2 mt-4">
-                        <span style="height: 35%"></span>
-                        <span style="height: 55%"></span>
-                        <span style="height: 42%"></span>
-                        <span style="height: 78%"></span>
-                        <span style="height: 60%"></span>
-                        <span style="height: 92%"></span>
+                    <div class="preview-rows">
+                        <span class="preview-row"></span>
+                        <span class="preview-row"></span>
+                        <span class="preview-row preview-row--short"></span>
                     </div>
-                    <p class="small app-muted mb-0 mt-3">Last 6 months of spending</p>
                 </div>
             </div>
         </div>
     </div>
 </section>
 
-<section id="features" class="landing-section mb-5" aria-labelledby="features-heading">
-    <div class="text-center mb-4">
-        <p class="text-uppercase small fw-semibold app-eyebrow mb-2">Features</p>
-        <h2 id="features-heading" class="h3 fw-bold mb-2">Everything you need to stay on top of your spending</h2>
-        <p class="app-muted mb-0">Simple tools that cover the everyday work of managing money.</p>
+<section class="landing-values" aria-label="What Expense Tracker offers">
+    <div class="landing-value">
+        <span class="landing-value-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                 stroke-linecap="round" stroke-linejoin="round" focusable="false">
+                <path d="M12 3 4 7v5c0 4.4 3.4 8 8 9 4.6-1 8-4.6 8-9V7l-8-4Z"></path>
+                <path d="m9 12 2 2 4-4"></path>
+            </svg>
+        </span>
+        <span><strong>Private by default.</strong> Your records belong to your account.</span>
     </div>
-
-    <div class="row g-3">
-        <div class="col-md-6 col-lg-4">
-            <div class="card h-100 app-card landing-feature">
-                <div class="card-body p-4">
-                    <h3 class="h5 card-title mb-2">Everyday transactions</h3>
-                    <p class="card-text small app-muted mb-0">
-                        Record daily expenses and income in seconds, with notes and
-                        dates that keep everything in context.
-                    </p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-6 col-lg-4">
-            <div class="card h-100 app-card landing-feature">
-                <div class="card-body p-4">
-                    <h3 class="h5 card-title mb-2">Categories that fit</h3>
-                    <p class="card-text small app-muted mb-0">
-                        Group spending into your own expense and income categories,
-                        then filter transactions by category at a glance.
-                    </p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-6 col-lg-4">
-            <div class="card h-100 app-card landing-feature">
-                <div class="card-body p-4">
-                    <h3 class="h5 card-title mb-2">Monthly budgets</h3>
-                    <p class="card-text small app-muted mb-0">
-                        Set a spending limit for each month and see exactly how much
-                        remains before you overspend.
-                    </p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-6 col-lg-4">
-            <div class="card h-100 app-card landing-feature">
-                <div class="card-body p-4">
-                    <h3 class="h5 card-title mb-2">Visual reports</h3>
-                    <p class="card-text small app-muted mb-0">
-                        Explore category breakdowns and spending trends for any date
-                        range, from a single day to the whole year.
-                    </p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-6 col-lg-4">
-            <div class="card h-100 app-card landing-feature">
-                <div class="card-body p-4">
-                    <h3 class="h5 card-title mb-2">One-glance dashboard</h3>
-                    <p class="card-text small app-muted mb-0">
-                        See this month&rsquo;s expenses, income, net cash flow, budget
-                        progress, and recent activity the moment you log in.
-                    </p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-6 col-lg-4">
-            <div class="card h-100 app-card landing-feature">
-                <div class="card-body p-4">
-                    <h3 class="h5 card-title mb-2">Private by design</h3>
-                    <p class="card-text small app-muted mb-0">
-                        Your transactions, categories, and budgets belong to your
-                        account &mdash; no one else can see them.
-                    </p>
-                </div>
-            </div>
-        </div>
+    <div class="landing-value">
+        <span class="landing-value-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                 stroke-linecap="round" stroke-linejoin="round" focusable="false">
+                <path d="M4 6h16"></path>
+                <path d="M4 12h10"></path>
+                <path d="M4 18h7"></path>
+            </svg>
+        </span>
+        <span><strong>Only the essentials.</strong> No noise, no inflated dashboards.</span>
+    </div>
+    <div class="landing-value">
+        <span class="landing-value-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                 stroke-linecap="round" stroke-linejoin="round" focusable="false">
+                <path d="M3 3v18h18"></path>
+                <path d="m7 14 4-4 3 3 5-6"></path>
+            </svg>
+        </span>
+        <span><strong>Real insight.</strong> Every number comes from your own records.</span>
     </div>
 </section>
 
-<section id="how-it-works" class="landing-section mb-5" aria-labelledby="how-it-works-heading">
-    <div class="text-center mb-4">
-        <p class="text-uppercase small fw-semibold app-eyebrow mb-2">How it works</p>
-        <h2 id="how-it-works-heading" class="h3 fw-bold mb-0">Up and running in three steps</h2>
+<section class="landing-section" id="features">
+    <div class="section-heading">
+        <p class="page-eyebrow">Everything in one place</p>
+        <h2 class="section-title">A quieter way to handle everyday money.</h2>
+        <p class="section-lead">Expense Tracker does the bookkeeping so you can focus on the decisions.</p>
     </div>
 
-    <div class="row g-3">
-        <div class="col-md-4">
-            <div class="landing-step h-100 p-4 rounded-4">
-                <span class="landing-step-number">1</span>
-                <h3 class="h5 fw-semibold mt-3 mb-2">Create your account</h3>
-                <p class="small app-muted mb-0">
-                    Sign up in a moment. Your starting categories are ready for you.
-                </p>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="landing-step h-100 p-4 rounded-4">
-                <span class="landing-step-number">2</span>
-                <h3 class="h5 fw-semibold mt-3 mb-2">Add your transactions</h3>
-                <p class="small app-muted mb-0">
-                    Log income and expenses, organize them by category, and set a
-                    monthly budget.
-                </p>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="landing-step h-100 p-4 rounded-4">
-                <span class="landing-step-number">3</span>
-                <h3 class="h5 fw-semibold mt-3 mb-2">Review and adjust</h3>
-                <p class="small app-muted mb-0">
-                    Follow your dashboard and reports, then tune your spending with
-                    confidence.
-                </p>
-            </div>
-        </div>
+    <div class="feature-grid">
+        <article class="feature-card">
+            <span class="feature-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                     stroke-linecap="round" stroke-linejoin="round" focusable="false">
+                    <path d="M4 7h14"></path>
+                    <path d="m15 4 3 3-3 3"></path>
+                    <path d="M20 17H6"></path>
+                    <path d="m9 14-3 3 3 3"></path>
+                </svg>
+            </span>
+            <h3 class="feature-title">Everyday transactions</h3>
+            <p class="feature-text">Add expenses and income in seconds, then search, filter, and review your full history.</p>
+        </article>
+        <article class="feature-card">
+            <span class="feature-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                     stroke-linecap="round" stroke-linejoin="round" focusable="false">
+                    <path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8Z"></path>
+                    <circle cx="7.5" cy="7.5" r="1.2"></circle>
+                </svg>
+            </span>
+            <h3 class="feature-title">Categories that fit</h3>
+            <p class="feature-text">Organize spending and income your way, with categories that stay private to you.</p>
+        </article>
+        <article class="feature-card">
+            <span class="feature-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                     stroke-linecap="round" stroke-linejoin="round" focusable="false">
+                    <path d="M4 7.5A2.5 2.5 0 0 1 6.5 5H18a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6.5A2.5 2.5 0 0 1 4 16.5v-9Z"></path>
+                    <path d="M4 8h16"></path>
+                    <path d="M15 12h3"></path>
+                </svg>
+            </span>
+            <h3 class="feature-title">Monthly budgets</h3>
+            <p class="feature-text">Set a limit for each month and see the remaining room before you overspend.</p>
+        </article>
+        <article class="feature-card">
+            <span class="feature-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                     stroke-linecap="round" stroke-linejoin="round" focusable="false">
+                    <path d="M4 20V10"></path>
+                    <path d="M10 20V4"></path>
+                    <path d="M16 20v-6"></path>
+                    <path d="M2 20h20"></path>
+                </svg>
+            </span>
+            <h3 class="feature-title">Visual reports</h3>
+            <p class="feature-text">Choose any date range and see category breakdowns and month-by-month trends.</p>
+        </article>
+        <article class="feature-card">
+            <span class="feature-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                     stroke-linecap="round" stroke-linejoin="round" focusable="false">
+                    <rect x="3" y="3" width="7" height="7" rx="1.5"></rect>
+                    <rect x="14" y="3" width="7" height="7" rx="1.5"></rect>
+                    <rect x="3" y="14" width="7" height="7" rx="1.5"></rect>
+                    <rect x="14" y="14" width="7" height="7" rx="1.5"></rect>
+                </svg>
+            </span>
+            <h3 class="feature-title">One-glance dashboard</h3>
+            <p class="feature-text">Start each day with this month’s totals, budget status, and recent activity.</p>
+        </article>
+        <article class="feature-card">
+            <span class="feature-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                     stroke-linecap="round" stroke-linejoin="round" focusable="false">
+                    <rect x="5" y="10" width="14" height="10" rx="2"></rect>
+                    <path d="M8 10V7a4 4 0 0 1 8 0v3"></path>
+                    <path d="M12 14v2"></path>
+                </svg>
+            </span>
+            <h3 class="feature-title">Private by design</h3>
+            <p class="feature-text">Each account has its own records and session. Nothing is shared or visible to others.</p>
+        </article>
     </div>
 </section>
 
-<section class="landing-cta p-4 p-md-5 rounded-4 text-center" aria-labelledby="cta-heading">
-    <h2 id="cta-heading" class="h3 fw-bold mb-2">Start tracking your money today</h2>
-    <p class="app-muted mb-4">
-        Free to use, quick to set up, and built to keep your finances understandable.
-    </p>
-    <div class="d-flex flex-wrap justify-content-center gap-2">
-        <a class="btn btn-success btn-lg px-4" href="{% url 'accounts:register' %}">Create free account</a>
-        <a class="btn btn-outline-success btn-lg px-4" href="{% url 'accounts:login' %}">Log in</a>
+<section class="landing-section landing-section--muted" id="how-it-works">
+    <div class="section-heading">
+        <p class="page-eyebrow">How it works</p>
+        <h2 class="section-title">Three simple steps.</h2>
+    </div>
+    <ol class="steps-grid">
+        <li class="step-card">
+            <span class="step-number">01</span>
+            <h3 class="step-title">Create your account</h3>
+            <p class="step-text">Sign up in under a minute and get a set of sensible starting categories.</p>
+        </li>
+        <li class="step-card">
+            <span class="step-number">02</span>
+            <h3 class="step-title">Record what happens</h3>
+            <p class="step-text">Log expenses and income as they occur, with the detail you actually need.</p>
+        </li>
+        <li class="step-card">
+            <span class="step-number">03</span>
+            <h3 class="step-title">Review and adjust</h3>
+            <p class="step-text">Check your budget and reports, spot patterns, and plan the month ahead.</p>
+        </li>
+    </ol>
+</section>
+
+<section class="landing-cta">
+    <div class="landing-cta-inner">
+        <div>
+            <p class="page-eyebrow">Ready when you are</p>
+            <h2 class="landing-cta-title">Start tracking your money today.</h2>
+            <p class="landing-cta-text">A simple, private place for the numbers that shape your month.</p>
+        </div>
+        <a class="button button--primary button--lg" href="{% url 'accounts:register' %}">Create free account</a>
     </div>
 </section>
 {% endblock %}

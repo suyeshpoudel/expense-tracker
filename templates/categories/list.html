@@ -1,90 +1,153 @@
 {% extends "base.html" %}
 
 {% block title %}Categories · Expense Tracker{% endblock %}
+{% block topbar_label %}Categories{% endblock %}
 
 {% block content %}
-<div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
-    <div>
-        <h1 class="h3 mb-1">Categories</h1>
-        <p class="app-muted mb-0">Organize your transactions with categories that fit your life.</p>
+<div class="page-header">
+    <div class="page-heading">
+        <p class="page-eyebrow">Organize</p>
+        <h1 class="page-title">Categories</h1>
+        <p class="page-subtitle">Group your transactions with categories that fit the way you spend and earn.</p>
     </div>
-    <div class="d-flex flex-wrap gap-2">
-        <a class="btn btn-success" href="{% url 'categories:create' %}?type=expense">Add expense category</a>
-        <a class="btn btn-outline-success" href="{% url 'categories:create' %}?type=income">Add income category</a>
-    </div>
-</div>
-
-<div class="row g-4">
-    <div class="col-lg-6">
-        <div class="card app-card h-100">
-            <div class="card-header bg-white">
-                <h2 class="h5 mb-0">Expense categories</h2>
-            </div>
-            {% if expense_categories %}
-                <ul class="list-group list-group-flush">
-                    {% for category in expense_categories %}
-                        <li class="list-group-item d-flex flex-wrap justify-content-between align-items-center gap-2">
-                            <div>
-                                <span class="fw-semibold">{{ category.name }}</span>
-                                <span class="small app-muted d-block">
-                                    <a class="text-decoration-none" href="{% url 'transactions:list' %}?category={{ category.pk }}">
-                                        {{ category.transaction_count }} transaction{{ category.transaction_count|pluralize }}
-                                    </a>
-                                </span>
-                            </div>
-                            <div class="d-flex gap-1">
-                                <a class="btn btn-sm btn-outline-secondary" href="{% url 'categories:edit' category.pk %}">Edit</a>
-                                <a class="btn btn-sm btn-outline-danger" href="{% url 'categories:delete' category.pk %}">Delete</a>
-                            </div>
-                        </li>
-                    {% endfor %}
-                </ul>
-            {% else %}
-                <div class="card-body text-center py-4">
-                    <p class="fw-semibold mb-1">No expense categories</p>
-                    <p class="small app-muted mb-3">Create one to organize your spending.</p>
-                    <a class="btn btn-sm btn-success" href="{% url 'categories:create' %}?type=expense">Add expense category</a>
-                </div>
-            {% endif %}
-        </div>
-    </div>
-
-    <div class="col-lg-6">
-        <div class="card app-card h-100">
-            <div class="card-header bg-white">
-                <h2 class="h5 mb-0">Income categories</h2>
-            </div>
-            {% if income_categories %}
-                <ul class="list-group list-group-flush">
-                    {% for category in income_categories %}
-                        <li class="list-group-item d-flex flex-wrap justify-content-between align-items-center gap-2">
-                            <div>
-                                <span class="fw-semibold">{{ category.name }}</span>
-                                <span class="small app-muted d-block">
-                                    <a class="text-decoration-none" href="{% url 'transactions:list' %}?category={{ category.pk }}">
-                                        {{ category.transaction_count }} transaction{{ category.transaction_count|pluralize }}
-                                    </a>
-                                </span>
-                            </div>
-                            <div class="d-flex gap-1">
-                                <a class="btn btn-sm btn-outline-secondary" href="{% url 'categories:edit' category.pk %}">Edit</a>
-                                <a class="btn btn-sm btn-outline-danger" href="{% url 'categories:delete' category.pk %}">Delete</a>
-                            </div>
-                        </li>
-                    {% endfor %}
-                </ul>
-            {% else %}
-                <div class="card-body text-center py-4">
-                    <p class="fw-semibold mb-1">No income categories</p>
-                    <p class="small app-muted mb-3">Create one to organize your income.</p>
-                    <a class="btn btn-sm btn-outline-success" href="{% url 'categories:create' %}?type=income">Add income category</a>
-                </div>
-            {% endif %}
-        </div>
+    <div class="page-actions">
+        <a class="button button--secondary" href="{% url 'categories:create' %}?type=income">Add income category</a>
+        <a class="button button--primary" href="{% url 'categories:create' %}?type=expense">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                <path d="M12 5v14"></path>
+                <path d="M5 12h14"></path>
+            </svg>
+            Add expense category
+        </a>
     </div>
 </div>
 
-<p class="small app-muted mt-3 mb-0">
-    Categories are private to your account. Categories used by transactions cannot be deleted.
+<div class="grid-two">
+    <section class="panel category-panel" aria-labelledby="expense-categories-heading">
+        <div class="panel-header">
+            <h2 class="panel-title" id="expense-categories-heading">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                    <path d="M7 17 17 7"></path>
+                    <path d="M9 7h8v8"></path>
+                </svg>
+                Expense categories
+            </h2>
+            <span class="panel-meta">{{ expense_categories|length }} total</span>
+        </div>
+        {% if expense_categories %}
+            <div class="category-list">
+                {% for category in expense_categories %}
+                    <div class="category-row">
+                        <span class="category-indicator" aria-hidden="true"></span>
+                        <div class="category-main">
+                            <span class="category-name">{{ category.name }}</span>
+                            <a class="category-count" href="{% url 'transactions:list' %}?category={{ category.pk }}">
+                                {{ category.transaction_count }} transaction{{ category.transaction_count|pluralize }}
+                            </a>
+                        </div>
+                        <div class="category-actions">
+                            <a class="icon-button" href="{% url 'categories:edit' category.pk %}"
+                               aria-label="Edit {{ category.name }}" title="Edit category">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                                    <path d="M12 20h9"></path>
+                                    <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
+                                </svg>
+                            </a>
+                            <a class="icon-button icon-button--danger" href="{% url 'categories:delete' category.pk %}"
+                               aria-label="Delete {{ category.name }}" title="Delete category">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                                    <path d="M3 6h18"></path>
+                                    <path d="M8 6V4h8v2"></path>
+                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <span class="empty-state-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                         stroke-linecap="round" stroke-linejoin="round" focusable="false">
+                        <path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8Z"></path>
+                        <circle cx="7.5" cy="7.5" r="1.2"></circle>
+                    </svg>
+                </span>
+                <p class="empty-state-title">No expense categories</p>
+                <p class="empty-state-text">Create a category to organize your spending.</p>
+                <a class="button button--primary button--sm" href="{% url 'categories:create' %}?type=expense">Add expense category</a>
+            </div>
+        {% endif %}
+    </section>
+
+    <section class="panel category-panel" aria-labelledby="income-categories-heading">
+        <div class="panel-header">
+            <h2 class="panel-title" id="income-categories-heading">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                    <path d="M17 7 7 17"></path>
+                    <path d="M15 17H7V9"></path>
+                </svg>
+                Income categories
+            </h2>
+            <span class="panel-meta">{{ income_categories|length }} total</span>
+        </div>
+        {% if income_categories %}
+            <div class="category-list">
+                {% for category in income_categories %}
+                    <div class="category-row">
+                        <span class="category-indicator category-indicator--income" aria-hidden="true"></span>
+                        <div class="category-main">
+                            <span class="category-name">{{ category.name }}</span>
+                            <a class="category-count" href="{% url 'transactions:list' %}?category={{ category.pk }}">
+                                {{ category.transaction_count }} transaction{{ category.transaction_count|pluralize }}
+                            </a>
+                        </div>
+                        <div class="category-actions">
+                            <a class="icon-button" href="{% url 'categories:edit' category.pk %}"
+                               aria-label="Edit {{ category.name }}" title="Edit category">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                                    <path d="M12 20h9"></path>
+                                    <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
+                                </svg>
+                            </a>
+                            <a class="icon-button icon-button--danger" href="{% url 'categories:delete' category.pk %}"
+                               aria-label="Delete {{ category.name }}" title="Delete category">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                                    <path d="M3 6h18"></path>
+                                    <path d="M8 6V4h8v2"></path>
+                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <span class="empty-state-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                         stroke-linecap="round" stroke-linejoin="round" focusable="false">
+                        <path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8Z"></path>
+                        <circle cx="7.5" cy="7.5" r="1.2"></circle>
+                    </svg>
+                </span>
+                <p class="empty-state-title">No income categories</p>
+                <p class="empty-state-text">Create a category to organize your income.</p>
+                <a class="button button--secondary button--sm" href="{% url 'categories:create' %}?type=income">Add income category</a>
+            </div>
+        {% endif %}
+    </section>
+</div>
+
+<p class="field-hint mt-3 mb-0">
+    Categories are private to your account. A category used by transactions cannot be deleted.
 </p>
 {% endblock %}

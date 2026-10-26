@@ -2,142 +2,330 @@
 {% load static %}
 
 {% block title %}Dashboard · Expense Tracker{% endblock %}
+{% block topbar_label %}Dashboard{% endblock %}
 
 {% block content %}
-<div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-4">
-    <div>
-        <h1 class="h3 mb-1">Dashboard</h1>
-        <p class="app-muted mb-0">
-            {{ month_label }} ·
-            <a class="text-decoration-none" href="{% url 'core:reports' %}">View detailed reports</a>
+<div class="page-header">
+    <div class="page-heading">
+        <p class="page-eyebrow">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                <rect x="3" y="5" width="18" height="16" rx="2"></rect>
+                <path d="M16 3v4"></path>
+                <path d="M8 3v4"></path>
+                <path d="M3 11h18"></path>
+            </svg>
+            {{ month_label }}
         </p>
+        <h1 class="page-title">Dashboard</h1>
+        <p class="page-subtitle">A clear view of your money for {{ month_label }}.</p>
     </div>
-    <div class="text-md-end">
-        <span class="app-muted small d-block">Signed in as</span>
-        <span class="fw-semibold">{{ user.get_username }}</span>
+    <div class="page-actions">
+        <a class="button button--secondary" href="{% url 'core:reports' %}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                <path d="M4 20V10"></path>
+                <path d="M10 20V4"></path>
+                <path d="M16 20v-6"></path>
+                <path d="M2 20h20"></path>
+            </svg>
+            Reports
+        </a>
+        <a class="button button--primary" href="{% url 'transactions:create' %}?type=expense">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                <path d="M12 5v14"></path>
+                <path d="M5 12h14"></path>
+            </svg>
+            Add transaction
+        </a>
     </div>
 </div>
 
-<div class="row g-3 mb-4">
-    <div class="col-sm-6 col-xl-3">
-        <div class="card h-100 app-card">
-            <div class="card-body">
-                <p class="small text-uppercase app-muted mb-2">Expenses this month</p>
-                <p class="fs-3 fw-semibold mb-1 text-danger">{{ CURRENCY_CODE }} {{ total_expenses|floatformat:2 }}</p>
-                <p class="small app-muted mb-0">Money spent during {{ month_label }}.</p>
-            </div>
-        </div>
+<section class="summary-band" aria-label="Financial summary for {{ month_label }}">
+    <div class="summary-cell">
+        <p class="summary-label">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                <path d="M7 17 17 7"></path>
+                <path d="M9 7h8v8"></path>
+            </svg>
+            Expenses
+        </p>
+        <p class="summary-value money">{{ CURRENCY_CODE }} {{ total_expenses|floatformat:2 }}</p>
+        <p class="summary-meta">Spent during {{ month_label }}</p>
     </div>
-    <div class="col-sm-6 col-xl-3">
-        <div class="card h-100 app-card">
-            <div class="card-body">
-                <p class="small text-uppercase app-muted mb-2">Income this month</p>
-                <p class="fs-3 fw-semibold mb-1 text-success">{{ CURRENCY_CODE }} {{ total_income|floatformat:2 }}</p>
-                <p class="small app-muted mb-0">Money received during {{ month_label }}.</p>
-            </div>
-        </div>
+    <div class="summary-cell">
+        <p class="summary-label">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                <path d="M17 7 7 17"></path>
+                <path d="M15 17H7V9"></path>
+            </svg>
+            Income
+        </p>
+        <p class="summary-value summary-value--income money">{{ CURRENCY_CODE }} {{ total_income|floatformat:2 }}</p>
+        <p class="summary-meta">Received during {{ month_label }}</p>
     </div>
-    <div class="col-sm-6 col-xl-3">
-        <div class="card h-100 app-card">
-            <div class="card-body">
-                <p class="small text-uppercase app-muted mb-2">Net cash flow</p>
-                <p class="fs-3 fw-semibold mb-1 {% if net_total < 0 %}text-danger{% elif net_total > 0 %}text-success{% endif %}">
-                    {{ CURRENCY_CODE }} {{ net_total|floatformat:2 }}
-                </p>
-                <p class="small app-muted mb-0">Income minus expenses for {{ month_label }}.</p>
-            </div>
-        </div>
+    <div class="summary-cell">
+        <p class="summary-label">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                <path d="M4 12h16"></path>
+                <path d="m15 7 5 5-5 5"></path>
+            </svg>
+            Net cash flow
+        </p>
+        <p class="summary-value money{% if net_total < 0 %} summary-value--negative{% elif net_total > 0 %} summary-value--positive{% endif %}">
+            {{ CURRENCY_CODE }} {{ net_total|floatformat:2 }}
+        </p>
+        <p class="summary-meta">Income minus expenses</p>
     </div>
-    <div class="col-sm-6 col-xl-3">
-        <div class="card h-100 app-card">
-            <div class="card-body">
-                {% if budget_status %}
-                    <p class="small text-uppercase app-muted mb-2">
-                        {% if budget_status.is_over_budget %}Over budget{% else %}Remaining budget{% endif %}
-                    </p>
-                    <p class="fs-3 fw-semibold mb-1 {% if budget_status.is_over_budget %}text-danger{% elif budget_status.is_near_limit %}text-warning-emphasis{% endif %}">
-                        {% if budget_status.is_over_budget %}
-                            {{ CURRENCY_CODE }} {{ budget_status.over_by|floatformat:2 }}
-                        {% else %}
-                            {{ CURRENCY_CODE }} {{ budget_status.remaining|floatformat:2 }}
-                        {% endif %}
-                    </p>
-                    <p class="small app-muted mb-2">
-                        of {{ CURRENCY_CODE }} {{ budget_status.budget.amount|floatformat:2 }} budget for {{ month_label }}
-                    </p>
-                    <div class="progress" style="height: 6px;"
-                         role="progressbar"
-                         aria-label="Monthly budget used"
-                         aria-valuenow="{{ budget_status.bar_width|floatformat:1 }}"
-                         aria-valuemin="0" aria-valuemax="100">
-                        <div class="progress-bar {% if budget_status.is_over_budget %}bg-danger{% elif budget_status.is_near_limit %}bg-warning{% else %}bg-success{% endif %}"
-                             style="width: {{ budget_status.bar_width|floatformat:1 }}%"></div>
-                    </div>
-                    <div class="d-flex flex-wrap justify-content-between gap-1 small mt-1">
-                        <span class="app-muted">{{ budget_status.percentage|floatformat:1 }}% used</span>
-                        {% if budget_status.is_over_budget %}
-                            <span class="text-danger">Over budget</span>
-                        {% elif budget_status.is_near_limit %}
-                            <span class="text-warning-emphasis">Near limit</span>
-                        {% else %}
-                            <span class="text-success">On track</span>
-                        {% endif %}
-                    </div>
-                    <a class="small text-decoration-none d-inline-block mt-2"
-                       href="{% url 'budgets:edit' budget_status.budget.pk %}">Adjust budget</a>
+    <div class="summary-cell">
+        {% if budget_status %}
+            <p class="summary-label">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                    <path d="M4 7.5A2.5 2.5 0 0 1 6.5 5H18a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6.5A2.5 2.5 0 0 1 4 16.5v-9Z"></path>
+                    <path d="M4 8h16"></path>
+                    <path d="M15 12h3"></path>
+                </svg>
+                {% if budget_status.is_over_budget %}Over budget{% else %}Remaining budget{% endif %}
+            </p>
+            <p class="summary-value money{% if budget_status.is_over_budget %} summary-value--negative{% elif budget_status.is_near_limit %} summary-value--negative{% endif %}">
+                {% if budget_status.is_over_budget %}
+                    {{ CURRENCY_CODE }} {{ budget_status.over_by|floatformat:2 }}
                 {% else %}
-                    <p class="small text-uppercase app-muted mb-2">Remaining budget</p>
-                    <p class="fs-3 fw-semibold mb-1">&mdash;</p>
-                    <p class="small app-muted mb-0">No budget configured yet.</p>
-                    <a class="small text-decoration-none d-inline-block mt-2"
-                       href="{% url 'budgets:create' %}">Set a monthly budget</a>
+                    {{ CURRENCY_CODE }} {{ budget_status.remaining|floatformat:2 }}
                 {% endif %}
+            </p>
+            <div class="summary-progress">
+                <div class="progress-track" role="progressbar"
+                     aria-label="Monthly budget used"
+                     aria-valuenow="{{ budget_status.bar_width|floatformat:1 }}"
+                     aria-valuemin="0" aria-valuemax="100">
+                    <div class="progress-fill{% if budget_status.is_over_budget %} progress-fill--danger{% elif budget_status.is_near_limit %} progress-fill--warning{% endif %}"
+                         style="width: {{ budget_status.bar_width|floatformat:1 }}%"></div>
+                </div>
+                <div class="summary-progress-meta">
+                    <span>{{ budget_status.percentage|floatformat:1 }}% used of {{ CURRENCY_CODE }} {{ budget_status.budget.amount|floatformat:2 }}</span>
+                    {% if budget_status.is_over_budget %}
+                        <span class="summary-status summary-status--over">Over budget</span>
+                    {% elif budget_status.is_near_limit %}
+                        <span class="summary-status summary-status--warn">Near limit</span>
+                    {% else %}
+                        <span class="summary-status summary-status--ok">On track</span>
+                    {% endif %}
+                </div>
+                <p class="summary-meta mb-0 mt-1">
+                    <a href="{% url 'budgets:edit' budget_status.budget.pk %}">Adjust budget</a>
+                </p>
             </div>
+        {% else %}
+            <p class="summary-label">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                    <path d="M4 7.5A2.5 2.5 0 0 1 6.5 5H18a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6.5A2.5 2.5 0 0 1 4 16.5v-9Z"></path>
+                    <path d="M4 8h16"></path>
+                    <path d="M15 12h3"></path>
+                </svg>
+                Budget
+            </p>
+            <p class="summary-value summary-value--muted">&mdash;</p>
+            <p class="summary-meta">
+                No budget configured yet.
+                <a href="{% url 'budgets:create' %}">Set a monthly budget</a>
+            </p>
+        {% endif %}
+    </div>
+</section>
+
+<div class="analytics-grid">
+    <section class="panel" aria-labelledby="trend-heading">
+        <div class="panel-header">
+            <h2 class="panel-title" id="trend-heading">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                    <path d="M3 3v18h18"></path>
+                    <path d="m7 14 4-4 3 3 5-6"></path>
+                </svg>
+                Spending trend
+            </h2>
+            <span class="panel-meta">{{ trend_label }}</span>
         </div>
-    </div>
+        <div class="panel-body">
+            {% if trend_has_data %}
+                <div class="chart-wrap">
+                    <canvas id="monthly-trend-chart" role="img"
+                            aria-label="Monthly expenses for {{ trend_label }}"></canvas>
+                </div>
+                {{ trend_chart_data|json_script:"monthly-trend-data" }}
+                <p class="chart-note">Expenses by month, in {{ CURRENCY_CODE }}</p>
+                <table class="visually-hidden">
+                    <caption>Monthly expenses for {{ trend_label }}</caption>
+                    <thead>
+                        <tr><th scope="col">Month</th><th scope="col">Expenses</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for item in trend %}
+                            <tr>
+                                <th scope="row">{{ item.label }}</th>
+                                <td>{{ CURRENCY_CODE }} {{ item.total|floatformat:2 }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div class="empty-state empty-state--compact">
+                    <span class="empty-state-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                             stroke-linecap="round" stroke-linejoin="round" focusable="false">
+                            <path d="M3 3v18h18"></path>
+                            <path d="m7 14 4-4 3 3 5-6"></path>
+                        </svg>
+                    </span>
+                    <p class="empty-state-title">No spending in this period</p>
+                    <p class="empty-state-text">Expense totals will appear here once you add transactions.</p>
+                    <a class="button button--secondary button--sm" href="{% url 'transactions:create' %}?type=expense">Add an expense</a>
+                </div>
+            {% endif %}
+        </div>
+    </section>
+
+    <section class="panel" aria-labelledby="category-heading">
+        <div class="panel-header">
+            <h2 class="panel-title" id="category-heading">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                    <path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8Z"></path>
+                    <circle cx="7.5" cy="7.5" r="1.2"></circle>
+                </svg>
+                Spending by category
+            </h2>
+            <span class="panel-meta">{{ period_label }}</span>
+        </div>
+        <div class="panel-body">
+            {% if has_expenses %}
+                <div class="chart-wrap chart-wrap--category">
+                    <canvas id="category-spending-chart" role="img"
+                            aria-label="Expense share by category for {{ period_label }}"></canvas>
+                </div>
+                {{ category_chart_data|json_script:"category-spending-data" }}
+
+                <div class="breakdown-list">
+                    {% for item in expense_breakdown %}
+                        <div class="breakdown-row">
+                            <span class="breakdown-name">
+                                <span class="breakdown-dot" aria-hidden="true"></span>
+                                <span>{{ item.name }}</span>
+                            </span>
+                            <span class="breakdown-count">{{ item.count }} transaction{{ item.count|pluralize }}</span>
+                            <span class="breakdown-amount">{{ CURRENCY_CODE }} {{ item.total|floatformat:2 }}</span>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state empty-state--compact">
+                    <span class="empty-state-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                             stroke-linecap="round" stroke-linejoin="round" focusable="false">
+                            <path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8Z"></path>
+                            <circle cx="7.5" cy="7.5" r="1.2"></circle>
+                        </svg>
+                    </span>
+                    <p class="empty-state-title">No expenses recorded</p>
+                    <p class="empty-state-text">Add an expense to see how your spending breaks down.</p>
+                    <a class="button button--secondary button--sm" href="{% url 'transactions:create' %}?type=expense">Add an expense</a>
+                </div>
+            {% endif %}
+        </div>
+    </section>
 </div>
 
-<div class="row g-3 mb-4">
-    <div class="col-lg-5">
-        {% include "includes/category_breakdown_card.html" %}
-    </div>
-    <div class="col-lg-7">
-        {% include "includes/trend_card.html" %}
-    </div>
-</div>
-
-<div class="card app-card">
-    <div class="card-header bg-white d-flex flex-wrap justify-content-between align-items-center gap-2">
-        <h2 class="h5 mb-0">Recent transactions</h2>
-        <a class="small text-decoration-none" href="{% url 'transactions:list' %}">View all</a>
+<section class="panel" aria-labelledby="recent-heading">
+    <div class="panel-header">
+        <h2 class="panel-title" id="recent-heading">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                <path d="M3 12a9 9 0 1 0 3-6.7L3 8"></path>
+                <path d="M3 3v5h5"></path>
+                <path d="M12 7v5l3 2"></path>
+            </svg>
+            Recent transactions
+        </h2>
+        <a class="link-arrow" href="{% url 'transactions:list' %}">
+            View all
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                <path d="M5 12h14"></path>
+                <path d="m12 5 7 7-7 7"></path>
+            </svg>
+        </a>
     </div>
 
     {% if recent_transactions %}
-        <ul class="list-group list-group-flush">
-            {% for transaction in recent_transactions %}
-                <li class="list-group-item d-flex flex-wrap justify-content-between align-items-center gap-2">
-                    <div>
-                        <a class="fw-semibold text-decoration-none" href="{% url 'transactions:detail' transaction.pk %}">
-                            {{ transaction.title }}
-                        </a>
-                        <div class="small app-muted">
-                            {% if transaction.category %}{{ transaction.category.name }} · {% else %}Uncategorized · {% endif %}{{ transaction.get_transaction_type_display }} · {{ transaction.date|date:"M j, Y" }}
-                        </div>
-                    </div>
-                    <span class="fw-semibold {% if transaction.transaction_type == 'expense' %}text-danger{% else %}text-success{% endif %}">
-                        {% if transaction.transaction_type == "expense" %}&minus;{% else %}+{% endif %}{{ CURRENCY_CODE }} {{ transaction.amount|floatformat:2 }}
-                    </span>
-                </li>
-            {% endfor %}
-        </ul>
+        <div class="table-wrap">
+            <table class="data-table data-table--stack">
+                <thead>
+                    <tr>
+                        <th scope="col">Transaction</th>
+                        <th scope="col">Date</th>
+                        <th scope="col">Type</th>
+                        <th scope="col" class="text-end">Amount</th>
+                        <th scope="col" class="text-end"><span class="visually-hidden">Actions</span></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for transaction in recent_transactions %}
+                        <tr>
+                            <td data-cell="title">
+                                <a class="cell-title" href="{% url 'transactions:detail' transaction.pk %}">{{ transaction.title }}</a>
+                                <span class="cell-sub">
+                                    {% if transaction.category %}{{ transaction.category.name }}{% else %}Uncategorized{% endif %}
+                                </span>
+                            </td>
+                            <td data-cell="date" class="cell-date">{{ transaction.date|date:"M j, Y" }}</td>
+                            <td data-cell="type">
+                                <span class="type-label type-label--{{ transaction.transaction_type }}">
+                                    <span class="type-mark" aria-hidden="true">{% if transaction.transaction_type == "expense" %}&minus;{% else %}+{% endif %}</span>
+                                    {{ transaction.get_transaction_type_display }}
+                                </span>
+                            </td>
+                            <td data-cell="amount" class="text-end cell-amount cell-amount--{{ transaction.transaction_type }}">
+                                {% if transaction.transaction_type == "expense" %}&minus;{% else %}+{% endif %}{{ CURRENCY_CODE }} {{ transaction.amount|floatformat:2 }}
+                            </td>
+                            <td data-cell="actions" class="cell-actions">
+                                <a class="icon-button" href="{% url 'transactions:detail' transaction.pk %}"
+                                   aria-label="View {{ transaction.title }}" title="View transaction">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                                         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                                        <path d="M5 12h14"></path>
+                                        <path d="m12 5 7 7-7 7"></path>
+                                    </svg>
+                                </a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     {% else %}
-        <div class="card-body text-center py-5">
-            <p class="fw-semibold mb-1">No transactions recorded yet</p>
-            <p class="small app-muted mb-3">Your latest activity will appear here.</p>
-            <a class="btn btn-sm btn-success" href="{% url 'transactions:create' %}?type=expense">Add your first expense</a>
+        <div class="empty-state">
+            <span class="empty-state-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                     stroke-linecap="round" stroke-linejoin="round" focusable="false">
+                    <path d="M4 7h14"></path>
+                    <path d="m15 4 3 3-3 3"></path>
+                    <path d="M20 17H6"></path>
+                    <path d="m9 14-3 3 3 3"></path>
+                </svg>
+            </span>
+            <p class="empty-state-title">No transactions recorded yet</p>
+            <p class="empty-state-text">Your latest activity will appear here. Record your first expense to get started.</p>
+            <a class="button button--primary button--sm" href="{% url 'transactions:create' %}?type=expense">Add your first expense</a>
         </div>
     {% endif %}
-</div>
+</section>
 {% endblock %}
 
 {% block extra_js %}

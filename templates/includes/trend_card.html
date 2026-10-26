@@ -1,46 +1,49 @@
-<div class="card app-card h-100">
-    <div class="card-header bg-white d-flex flex-wrap justify-content-between align-items-center gap-2">
-        <h2 class="h5 mb-0">Monthly spending trend</h2>
-        <span class="small app-muted">{{ trend_label }}</span>
+<section class="panel" aria-labelledby="report-trend-heading">
+    <div class="panel-header">
+        <h2 class="panel-title" id="report-trend-heading">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                <path d="M3 3v18h18"></path>
+                <path d="m7 14 4-4 3 3 5-6"></path>
+            </svg>
+            Monthly spending trend
+        </h2>
+        <span class="panel-meta">{{ trend_label }}</span>
     </div>
-
-    {% if trend_has_data %}
-        <div class="card-body">
-            <div class="app-chart" style="height: 230px;">
+    <div class="panel-body">
+        {% if trend_has_data %}
+            <div class="chart-wrap">
                 <canvas id="monthly-trend-chart" role="img"
                         aria-label="Monthly expenses for {{ trend_label }}"></canvas>
             </div>
             {{ trend_chart_data|json_script:"monthly-trend-data" }}
-
-            <details class="mt-3">
-                <summary class="small">View monthly totals</summary>
-                <div class="table-responsive mt-2">
-                    <table class="table table-sm mb-0">
-                        <caption class="visually-hidden">Monthly expenses for {{ trend_label }}</caption>
-                        <thead>
-                            <tr>
-                                <th scope="col">Month</th>
-                                <th scope="col" class="text-end">Expenses</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for month in trend %}
-                                <tr>
-                                    <th scope="row" class="fw-normal">{{ month.label }}</th>
-                                    <td class="text-end text-nowrap">
-                                        {{ CURRENCY_CODE }} {{ month.total|floatformat:2 }}
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </details>
-        </div>
-    {% else %}
-        <div class="card-body text-center py-5">
-            <p class="fw-semibold mb-1">No spending in this period</p>
-            <p class="small app-muted mb-0">Expense totals will appear here once you add transactions.</p>
-        </div>
-    {% endif %}
-</div>
+            <p class="chart-note">Monthly expenses, in {{ CURRENCY_CODE }}</p>
+            <table class="visually-hidden">
+                <caption>Monthly expenses for {{ trend_label }}</caption>
+                <thead>
+                    <tr><th scope="col">Month</th><th scope="col">Expenses</th></tr>
+                </thead>
+                <tbody>
+                    {% for item in trend %}
+                        <tr>
+                            <th scope="row">{{ item.label }}</th>
+                            <td>{{ CURRENCY_CODE }} {{ item.total|floatformat:2 }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <div class="empty-state empty-state--compact">
+                <span class="empty-state-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                         stroke-linecap="round" stroke-linejoin="round" focusable="false">
+                        <path d="M3 3v18h18"></path>
+                        <path d="m7 14 4-4 3 3 5-6"></path>
+                    </svg>
+                </span>
+                <p class="empty-state-title">No spending in this period</p>
+                <p class="empty-state-text">Expense totals will appear here once you add transactions.</p>
+            </div>
+        {% endif %}
+    </div>
+</section>

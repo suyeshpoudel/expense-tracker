@@ -3,14 +3,14 @@
 {% block title %}Page not found · Expense Tracker{% endblock %}
 
 {% block content %}
-<div class="text-center py-5">
-    <p class="display-5 fw-semibold mb-2">404</p>
-    <h1 class="h3 mb-2">Page not found</h1>
-    <p class="app-muted mb-4">The page you are looking for does not exist or has moved.</p>
-    {% if user.is_authenticated %}
-        <a class="btn btn-success" href="{% url 'core:dashboard' %}">Go to dashboard</a>
-    {% else %}
-        <a class="btn btn-success" href="{% url 'core:home' %}">Go home</a>
-    {% endif %}
+<div class="error-shell">
+    <div class="error-card">
+        <span class="error-code">404</span>
+        <h1 class="error-title">Page not found</h1>
+        <p class="error-text">The page you are looking for may have moved, or the address may be wrong.</p>
+        <div class="error-actions">
+            <a class="button button--primary" href="{% url 'core:home' %}">Go to home</a>
+        </div>
+    </div>
 </div>
 {% endblock %}

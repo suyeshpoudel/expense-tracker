@@ -1,44 +1,46 @@
 {% extends "base.html" %}
 
 {% block title %}{{ page_title }} · Expense Tracker{% endblock %}
+{% block topbar_label %}Categories{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-lg-7">
-        <div class="card app-card shadow-sm">
-            <div class="card-body p-4">
-                <h1 class="h3 mb-1">{{ page_title }}</h1>
-                <p class="app-muted small mb-4">Category names must be unique within their type.</p>
+<a class="back-link" href="{% url 'categories:list' %}">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+        <path d="M19 12H5"></path>
+        <path d="m12 19-7-7 7-7"></path>
+    </svg>
+    Back to categories
+</a>
 
-                {% if form.non_field_errors %}
-                    <div class="alert alert-danger" role="alert">
-                        {{ form.non_field_errors }}
-                    </div>
-                {% endif %}
+<div class="page-header">
+    <div class="page-heading">
+        <p class="page-eyebrow">{% if category %}Edit category{% else %}New category{% endif %}</p>
+        <h1 class="page-title">{{ page_title }}</h1>
+        <p class="page-subtitle">Category names must be unique within their type.</p>
+    </div>
+</div>
 
-                <form method="post" class="app-form" novalidate>
-                    {% csrf_token %}
-
-                    {% for field in form %}
-                        <div class="mb-3">
-                            <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
-                            {{ field }}
-                            {% for error in field.errors %}
-                                <div class="invalid-feedback d-block">{{ error }}</div>
-                            {% endfor %}
-                            {% if field.help_text %}
-                                <div class="form-text">{{ field.help_text }}</div>
-                            {% endif %}
-                        </div>
-                    {% endfor %}
-
-                    <div class="d-flex flex-wrap gap-2 mt-4">
-                        <button class="btn btn-success" type="submit">{{ submit_label }}</button>
-                        <a class="btn btn-outline-secondary" href="{% url 'categories:list' %}">Cancel</a>
-                    </div>
-                </form>
+<div class="form-panel">
+    <form method="post" class="app-form" novalidate>
+        {% csrf_token %}
+        <div class="form-panel-body">
+            {% if form.non_field_errors %}
+                <div class="alert alert--danger" role="alert">{{ form.non_field_errors }}</div>
+            {% endif %}
+            {% for field in form %}
+                {% include "includes/form_field.html" with field=field %}
+            {% endfor %}
+        </div>
+        <div class="form-panel-footer">
+            <p class="form-note mb-0">
+                Categories help you compare spending and income over time.
+            </p>
+            <div class="form-actions">
+                <a class="button button--secondary" href="{% url 'categories:list' %}">Cancel</a>
+                <button class="button button--primary" type="submit">{{ submit_label }}</button>
             </div>
         </div>
-    </div>
+    </form>
 </div>
 {% endblock %}

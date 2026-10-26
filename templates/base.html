@@ -4,79 +4,18 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="A simple personal expense tracker.">
+    <meta name="description" content="A calm, focused personal expense tracker.">
+    <meta name="theme-color" content="#f5f6f3">
     <title>{% block title %}Expense Tracker{% endblock %}</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2064%2064%27%3E%3Crect%20width%3D%2764%27%20height%3D%2764%27%20rx%3D%2716%27%20fill%3D%27%230e6b4b%27%2F%3E%3Cpath%20d%3D%27M18%2044V34M32%2044V20M46%2044v-8%27%20stroke%3D%27white%27%20stroke-width%3D%276%27%20stroke-linecap%3D%27round%27%2F%3E%3C%2Fsvg%3E">
     <link rel="stylesheet" href="{% static 'vendor/bootstrap/bootstrap.min.css' %}">
     <link rel="stylesheet" href="{% static 'css/app.css' %}">
 </head>
-<body class="d-flex flex-column min-vh-100{% if user.is_authenticated %} app-authenticated{% endif %}">
-    <a class="visually-hidden-focusable p-2 bg-white" href="#main-content">Skip to main content</a>
-
-    <nav class="navbar navbar-expand-lg navbar-dark app-navbar" aria-label="Main navigation">
-        <div class="container">
-            {% if user.is_authenticated %}
-                <button class="navbar-toggler d-lg-none me-2" type="button"
-                        data-bs-toggle="offcanvas" data-bs-target="#app-sidebar"
-                        aria-controls="app-sidebar" aria-label="Toggle sidebar">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <a class="navbar-brand fw-semibold" href="{% url 'core:home' %}">
-                    Expense Tracker
-                </a>
-                <div class="dropdown ms-auto">
-                    <button class="btn app-user-toggle" type="button" id="navbar-user-menu"
-                            data-bs-toggle="dropdown" aria-expanded="false"
-                            aria-label="Account menu for {{ user.get_username }}">
-                        <svg class="app-user-icon" viewBox="0 0 24 24" fill="none"
-                             stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
-                             stroke-linejoin="round" aria-hidden="true" focusable="false">
-                            <circle cx="12" cy="8" r="3.5"></circle>
-                            <path d="M4.5 20a7.5 7.5 0 0 1 15 0"></path>
-                        </svg>
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end app-user-dropdown"
-                        aria-labelledby="navbar-user-menu">
-                        <li class="app-user-summary">
-                            <span class="app-user-name d-block">{{ user.get_full_name|default:user.get_username }}</span>
-                            <span class="app-user-username d-block">@{{ user.get_username }}</span>
-                        </li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li>
-                            <form method="post" action="{% url 'accounts:logout' %}">
-                                {% csrf_token %}
-                                <button class="dropdown-item app-user-logout" type="submit">Log out</button>
-                            </form>
-                        </li>
-                    </ul>
-                </div>
-            {% else %}
-                <a class="navbar-brand fw-semibold" href="{% url 'core:home' %}">
-                    Expense Tracker
-                </a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-                        data-bs-target="#main-navigation" aria-controls="main-navigation"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="collapse navbar-collapse" id="main-navigation">
-                    <ul class="navbar-nav ms-auto align-items-md-center">
-                        <li class="nav-item">
-                            <a class="btn btn-outline-light fw-semibold px-3 me-md-2 my-2 my-md-0"
-                               href="{% url 'accounts:login' %}">Log in</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="btn app-nav-cta fw-semibold px-3 my-2 my-md-0" href="{% url 'accounts:register' %}">
-                                Get started
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            {% endif %}
-        </div>
-    </nav>
+<body class="app-body{% block body_class %}{% endblock %}{% if user.is_authenticated %} app-authenticated{% endif %} d-flex flex-column min-vh-100">
+    <a class="skip-link" href="#main-content">Skip to content</a>
 
     {% if messages %}
-        <div class="toast-container position-fixed end-0 p-3 app-toast-container"
+        <div class="toast-container app-toast-container position-fixed end-0 p-3"
              data-app-toasts aria-live="polite" aria-atomic="true">
             {% for message in messages %}
                 <div class="toast app-toast app-toast-{{ message.tags|default:'info' }}"
@@ -88,11 +27,11 @@
                         <span class="app-toast-dot" aria-hidden="true"></span>
                         <strong class="me-auto">
                             {% if message.tags == 'success' %}
-                                Success
+                                Saved
                             {% elif message.tags == 'danger' %}
-                                Error
+                                Something went wrong
                             {% elif message.tags == 'warning' %}
-                                Warning
+                                Heads up
                             {% else %}
                                 Notice
                             {% endif %}
@@ -108,140 +47,302 @@
         </div>
     {% endif %}
 
-    <div class="app-shell{% if user.is_authenticated %} d-lg-flex{% endif %}">
-        {% if user.is_authenticated %}
+    {% if user.is_authenticated %}
+        <div class="app-shell">
             <aside class="offcanvas-lg offcanvas-start app-sidebar" tabindex="-1"
                    id="app-sidebar" aria-labelledby="app-sidebar-title">
-                <div class="offcanvas-header">
-                    <span class="offcanvas-title fw-semibold" id="app-sidebar-title">Menu</span>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"
-                            data-bs-target="#app-sidebar" aria-label="Close"></button>
+                <h2 class="visually-hidden" id="app-sidebar-title">Application navigation</h2>
+                <div class="offcanvas-header app-sidebar-header">
+                    <a class="brand sidebar-brand" href="{% url 'core:dashboard' %}">
+                        <span class="brand-mark" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round" focusable="false">
+                                <path d="M5 17V9"></path>
+                                <path d="M12 17V5"></path>
+                                <path d="M19 17v-5"></path>
+                            </svg>
+                        </span>
+                        <span class="sidebar-brand-text">
+                            <span class="sidebar-wordmark">Expense Tracker</span>
+                            <span class="sidebar-caption">Personal ledger</span>
+                        </span>
+                    </a>
+                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas"
+                            data-bs-target="#app-sidebar" aria-label="Close navigation"></button>
                 </div>
-                <div class="offcanvas-body flex-column">
-                    <nav class="app-sidebar-nav" aria-label="Section navigation">
-                        <div class="app-sidebar-top d-flex align-items-center justify-content-between gap-2 mb-2">
-                            <p class="text-uppercase small fw-semibold app-eyebrow app-sidebar-heading mb-0">Menu</p>
-                            <button class="btn app-sidebar-toggle d-none d-lg-inline-flex align-items-center justify-content-center"
-                                    type="button" id="sidebar-toggle"
-                                    aria-controls="app-sidebar" aria-expanded="true"
-                                    aria-label="Collapse sidebar" title="Collapse sidebar">
-                                <svg class="app-sidebar-toggle-icon" viewBox="0 0 24 24" fill="none"
-                                     stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                     stroke-linejoin="round" aria-hidden="true" focusable="false">
-                                    <path d="m15 18-6-6 6-6"></path>
-                                </svg>
-                            </button>
-                        </div>
-                        <ul class="nav flex-column gap-1">
-                            <li class="nav-item">
-                                <a class="nav-link d-flex align-items-center gap-2{% if request.resolver_match.url_name == 'dashboard' %} active{% endif %}"
-                                   {% if request.resolver_match.url_name == 'dashboard' %}aria-current="page"{% endif %}
-                                   aria-label="Dashboard" title="Dashboard"
-                                   href="{% url 'core:dashboard' %}">
-                                    <svg class="app-sidebar-icon" viewBox="0 0 24 24" fill="none"
-                                         stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
-                                         stroke-linejoin="round" aria-hidden="true" focusable="false">
-                                        <rect x="3" y="3" width="7" height="7" rx="1.5"></rect>
-                                        <rect x="14" y="3" width="7" height="7" rx="1.5"></rect>
-                                        <rect x="3" y="14" width="7" height="7" rx="1.5"></rect>
-                                        <rect x="14" y="14" width="7" height="7" rx="1.5"></rect>
-                                    </svg>
-                                    <span class="app-sidebar-label">Dashboard</span>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link d-flex align-items-center gap-2{% if request.resolver_match.namespace == 'budgets' %} active{% endif %}"
-                                   {% if request.resolver_match.namespace == 'budgets' %}aria-current="page"{% endif %}
-                                   aria-label="Budgets" title="Budgets"
-                                   href="{% url 'budgets:list' %}">
-                                    <svg class="app-sidebar-icon" viewBox="0 0 24 24" fill="none"
-                                         stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
-                                         stroke-linejoin="round" aria-hidden="true" focusable="false">
-                                        <path d="M4 7.5A2.5 2.5 0 0 1 6.5 5H18a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6.5A2.5 2.5 0 0 1 4 16.5v-9Z"></path>
-                                        <path d="M4 8h16"></path>
-                                        <path d="M15 12h3"></path>
-                                    </svg>
-                                    <span class="app-sidebar-label">Budgets</span>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link d-flex align-items-center gap-2{% if request.resolver_match.url_name == 'reports' %} active{% endif %}"
-                                   {% if request.resolver_match.url_name == 'reports' %}aria-current="page"{% endif %}
-                                   aria-label="Reports" title="Reports"
-                                   href="{% url 'core:reports' %}">
-                                    <svg class="app-sidebar-icon" viewBox="0 0 24 24" fill="none"
-                                         stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
-                                         stroke-linejoin="round" aria-hidden="true" focusable="false">
-                                        <path d="M4 20V10"></path>
-                                        <path d="M10 20V4"></path>
-                                        <path d="M16 20v-6"></path>
-                                        <path d="M2 20h20"></path>
-                                    </svg>
-                                    <span class="app-sidebar-label">Reports</span>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link d-flex align-items-center gap-2{% if request.resolver_match.namespace == 'transactions' %} active{% endif %}"
-                                   {% if request.resolver_match.namespace == 'transactions' %}aria-current="page"{% endif %}
-                                   aria-label="Transactions" title="Transactions"
-                                   href="{% url 'transactions:list' %}">
-                                    <svg class="app-sidebar-icon" viewBox="0 0 24 24" fill="none"
-                                         stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
-                                         stroke-linejoin="round" aria-hidden="true" focusable="false">
-                                        <path d="M4 7h14"></path>
-                                        <path d="m15 4 3 3-3 3"></path>
-                                        <path d="M20 17H6"></path>
-                                        <path d="m9 14-3 3 3 3"></path>
-                                    </svg>
-                                    <span class="app-sidebar-label">Transactions</span>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link d-flex align-items-center gap-2{% if request.resolver_match.namespace == 'categories' %} active{% endif %}"
-                                   {% if request.resolver_match.namespace == 'categories' %}aria-current="page"{% endif %}
-                                   aria-label="Categories" title="Categories"
-                                   href="{% url 'categories:list' %}">
-                                    <svg class="app-sidebar-icon" viewBox="0 0 24 24" fill="none"
-                                         stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
-                                         stroke-linejoin="round" aria-hidden="true" focusable="false">
-                                        <path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8Z"></path>
-                                        <circle cx="7.5" cy="7.5" r="1.2"></circle>
-                                    </svg>
-                                    <span class="app-sidebar-label">Categories</span>
-                                </a>
-                            </li>
-                        </ul>
+                <div class="offcanvas-body">
+                    <a class="brand sidebar-brand d-none d-lg-flex" href="{% url 'core:dashboard' %}">
+                        <span class="brand-mark" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round" focusable="false">
+                                <path d="M5 17V9"></path>
+                                <path d="M12 17V5"></path>
+                                <path d="M19 17v-5"></path>
+                            </svg>
+                        </span>
+                        <span class="sidebar-brand-text">
+                            <span class="sidebar-wordmark">Expense Tracker</span>
+                            <span class="sidebar-caption">Personal ledger</span>
+                        </span>
+                    </a>
 
-                        <div class="app-sidebar-profile">
-                            <a class="nav-link d-flex align-items-center gap-2 app-sidebar-profile-link{% if request.resolver_match.url_name == 'profile' %} active{% endif %}"
-                               {% if request.resolver_match.url_name == 'profile' %}aria-current="page"{% endif %}
-                               href="{% url 'accounts:profile' %}"
+                    <div class="sidebar-topline">
+                        <span class="sidebar-topline-label">Workspace</span>
+                        <button class="sidebar-toggle" type="button" id="sidebar-toggle"
+                                aria-controls="app-sidebar" aria-expanded="true"
+                                aria-label="Collapse sidebar" title="Collapse sidebar">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                 aria-hidden="true" focusable="false">
+                                <path d="m15 18-6-6 6-6"></path>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <nav class="sidebar-nav" aria-label="Section navigation">
+                        <p class="sidebar-section">Overview</p>
+                        <a class="sidebar-link{% if request.resolver_match.url_name == 'dashboard' %} active{% endif %}"
+                           {% if request.resolver_match.url_name == 'dashboard' %}aria-current="page"{% endif %}
+                           aria-label="Dashboard" title="Dashboard"
+                           href="{% url 'core:dashboard' %}">
+                            <svg class="app-sidebar-icon" viewBox="0 0 24 24" fill="none"
+                                 stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                                 stroke-linejoin="round" aria-hidden="true" focusable="false">
+                                <rect x="3" y="3" width="7" height="7" rx="1.5"></rect>
+                                <rect x="14" y="3" width="7" height="7" rx="1.5"></rect>
+                                <rect x="3" y="14" width="7" height="7" rx="1.5"></rect>
+                                <rect x="14" y="14" width="7" height="7" rx="1.5"></rect>
+                            </svg>
+                            <span class="sidebar-label">Dashboard</span>
+                        </a>
+                        <a class="sidebar-link{% if request.resolver_match.namespace == 'transactions' %} active{% endif %}"
+                           {% if request.resolver_match.namespace == 'transactions' %}aria-current="page"{% endif %}
+                           aria-label="Transactions" title="Transactions"
+                           href="{% url 'transactions:list' %}">
+                            <svg class="app-sidebar-icon" viewBox="0 0 24 24" fill="none"
+                                 stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                                 stroke-linejoin="round" aria-hidden="true" focusable="false">
+                                <path d="M4 7h14"></path>
+                                <path d="m15 4 3 3-3 3"></path>
+                                <path d="M20 17H6"></path>
+                                <path d="m9 14-3 3 3 3"></path>
+                            </svg>
+                            <span class="sidebar-label">Transactions</span>
+                        </a>
+
+                        <p class="sidebar-section">Planning</p>
+                        <a class="sidebar-link{% if request.resolver_match.namespace == 'budgets' %} active{% endif %}"
+                           {% if request.resolver_match.namespace == 'budgets' %}aria-current="page"{% endif %}
+                           aria-label="Budgets" title="Budgets"
+                           href="{% url 'budgets:list' %}">
+                            <svg class="app-sidebar-icon" viewBox="0 0 24 24" fill="none"
+                                 stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                                 stroke-linejoin="round" aria-hidden="true" focusable="false">
+                                <path d="M4 7.5A2.5 2.5 0 0 1 6.5 5H18a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6.5A2.5 2.5 0 0 1 4 16.5v-9Z"></path>
+                                <path d="M4 8h16"></path>
+                                <path d="M15 12h3"></path>
+                            </svg>
+                            <span class="sidebar-label">Budgets</span>
+                        </a>
+                        <a class="sidebar-link{% if request.resolver_match.namespace == 'categories' %} active{% endif %}"
+                           {% if request.resolver_match.namespace == 'categories' %}aria-current="page"{% endif %}
+                           aria-label="Categories" title="Categories"
+                           href="{% url 'categories:list' %}">
+                            <svg class="app-sidebar-icon" viewBox="0 0 24 24" fill="none"
+                                 stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                                 stroke-linejoin="round" aria-hidden="true" focusable="false">
+                                <path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8Z"></path>
+                                <circle cx="7.5" cy="7.5" r="1.2"></circle>
+                            </svg>
+                            <span class="sidebar-label">Categories</span>
+                        </a>
+
+                        <p class="sidebar-section">Insights</p>
+                        <a class="sidebar-link{% if request.resolver_match.url_name == 'reports' %} active{% endif %}"
+                           {% if request.resolver_match.url_name == 'reports' %}aria-current="page"{% endif %}
+                           aria-label="Reports" title="Reports"
+                           href="{% url 'core:reports' %}">
+                            <svg class="app-sidebar-icon" viewBox="0 0 24 24" fill="none"
+                                 stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                                 stroke-linejoin="round" aria-hidden="true" focusable="false">
+                                <path d="M4 20V10"></path>
+                                <path d="M10 20V4"></path>
+                                <path d="M16 20v-6"></path>
+                                <path d="M2 20h20"></path>
+                            </svg>
+                            <span class="sidebar-label">Reports</span>
+                        </a>
+                    </nav>
+
+                    <div class="sidebar-footer">
+                        <div class="sidebar-profile">
+                            <a class="app-sidebar-profile-link" href="{% url 'accounts:profile' %}"
                                aria-label="View profile for {{ user.get_username }}"
                                title="{{ user.get_username }}{% if user.email %} · {{ user.email }}{% endif %}">
-                                <span class="app-sidebar-profile-avatar" aria-hidden="true">{{ user.get_username|first|upper }}</span>
-                                <span class="app-sidebar-profile-meta">
-                                    <span class="app-sidebar-profile-name">{{ user.get_username }}</span>
-                                    <span class="app-sidebar-profile-email">{{ user.email|default:"No email added" }}</span>
+                                <span class="sidebar-avatar" aria-hidden="true">{{ user.get_username|first|upper }}</span>
+                                <span class="sidebar-profile-meta">
+                                    <span class="sidebar-profile-name">{{ user.get_full_name|default:user.get_username }}</span>
+                                    <span class="sidebar-profile-email">{{ user.email|default:"No email added" }}</span>
                                 </span>
                             </a>
+                            <form class="sidebar-logout-form" method="post" action="{% url 'accounts:logout' %}">
+                                {% csrf_token %}
+                                <button class="icon-button sidebar-logout" type="submit"
+                                        aria-label="Log out" title="Log out">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                         stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"
+                                         aria-hidden="true" focusable="false">
+                                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                                        <path d="m16 17 5-5-5-5"></path>
+                                        <path d="M21 12H9"></path>
+                                    </svg>
+                                </button>
+                            </form>
                         </div>
-                    </nav>
+                    </div>
                 </div>
             </aside>
-        {% endif %}
 
-        <main id="main-content" class="{% if user.is_authenticated %}app-main {% endif %}flex-grow-1 py-4">
-            <div class="container">
+            <div class="app-frame">
+                <header class="app-topbar">
+                    <div class="topbar-left">
+                        <button class="topbar-menu d-lg-none" type="button"
+                                data-bs-toggle="offcanvas" data-bs-target="#app-sidebar"
+                                aria-controls="app-sidebar" aria-label="Open navigation">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                 stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"
+                                 aria-hidden="true" focusable="false">
+                                <path d="M4 6h16"></path>
+                                <path d="M4 12h16"></path>
+                                <path d="M4 18h16"></path>
+                            </svg>
+                        </button>
+                        <a class="brand topbar-mobile-brand" href="{% url 'core:dashboard' %}">
+                            <span class="brand-mark" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round" focusable="false">
+                                    <path d="M5 17V9"></path>
+                                    <path d="M12 17V5"></path>
+                                    <path d="M19 17v-5"></path>
+                                </svg>
+                            </span>
+                            <span>Expense Tracker</span>
+                        </a>
+                        <nav class="topbar-breadcrumb" aria-label="Breadcrumb">
+                            <span>Personal</span>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                 aria-hidden="true" focusable="false">
+                                <path d="m9 18 6-6-6-6"></path>
+                            </svg>
+                            <span class="topbar-current">{% block topbar_label %}Dashboard{% endblock %}</span>
+                        </nav>
+                    </div>
+                    <div class="topbar-actions">
+                        <div class="dropdown user-menu">
+                            <button class="user-menu-toggle" type="button" id="navbar-user-menu"
+                                    data-bs-toggle="dropdown" aria-expanded="false"
+                                    aria-label="Account menu for {{ user.get_username }}">
+                                <span class="sidebar-avatar" aria-hidden="true">{{ user.get_username|first|upper }}</span>
+                                <span class="user-menu-name">{{ user.get_full_name|default:user.get_username }}</span>
+                                <svg class="user-menu-chevron" viewBox="0 0 24 24" fill="none"
+                                     stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                     stroke-linejoin="round" aria-hidden="true" focusable="false">
+                                    <path d="m6 9 6 6 6-6"></path>
+                                </svg>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbar-user-menu">
+                                <li class="user-dropdown-head">
+                                    <span class="user-dropdown-name">{{ user.get_full_name|default:user.get_username }}</span>
+                                    <span class="user-dropdown-username">@{{ user.get_username }}</span>
+                                    <span class="user-dropdown-email">{{ user.email|default:"No email added" }}</span>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'accounts:profile' %}">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                             stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"
+                                             aria-hidden="true" focusable="false">
+                                            <circle cx="12" cy="8" r="3.5"></circle>
+                                            <path d="M4.5 20a7.5 7.5 0 0 1 15 0"></path>
+                                        </svg>
+                                        View profile
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <form method="post" action="{% url 'accounts:logout' %}">
+                                        {% csrf_token %}
+                                        <button class="dropdown-item app-user-logout" type="submit">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                 stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"
+                                                 aria-hidden="true" focusable="false">
+                                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                                                <path d="m16 17 5-5-5-5"></path>
+                                                <path d="M21 12H9"></path>
+                                            </svg>
+                                            Log out
+                                        </button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </header>
+    {% else %}
+        <header class="public-nav">
+            <div class="public-nav-inner">
+                <a class="brand" href="{% url 'core:home' %}">
+                    <span class="brand-mark" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                             stroke-width="2" stroke-linecap="round" stroke-linejoin="round" focusable="false">
+                            <path d="M5 17V9"></path>
+                            <path d="M12 17V5"></path>
+                            <path d="M19 17v-5"></path>
+                        </svg>
+                    </span>
+                    <span>Expense Tracker</span>
+                </a>
+                <nav class="public-nav-links d-none d-md-flex" aria-label="Primary navigation">
+                    <a class="public-nav-link" href="{% url 'core:home' %}#features">Features</a>
+                    <a class="public-nav-link" href="{% url 'core:home' %}#how-it-works">How it works</a>
+                </nav>
+                <div class="public-nav-actions">
+                    <a class="button button--ghost button--sm" href="{% url 'accounts:login' %}">Log in</a>
+                    <a class="button button--primary button--sm" href="{% url 'accounts:register' %}">Get started</a>
+                </div>
+            </div>
+        </header>
+    {% endif %}
+
+    {% if user.is_authenticated %}
+        <main id="main-content" class="app-main">
+            <div class="page-container">
+    {% else %}
+        <main id="main-content" class="public-main flex-grow-1">
+    {% endif %}
                 {% block content %}{% endblock %}
+    {% if user.is_authenticated %}
             </div>
         </main>
-    </div>
 
-    <footer class="app-footer py-3 mt-auto">
-        <div class="container text-center small">
-            Expense Tracker &middot; Personal finance, kept simple.
+        <footer class="app-footer">
+            <div class="app-footer-inner">
+                <span>Expense Tracker</span>
+                <span>Personal finance, kept simple.</span>
+            </div>
+        </footer>
         </div>
-    </footer>
+        </div>
+    {% else %}
+        </main>
+
+        <footer class="public-footer">
+            <div class="public-footer-inner">
+                <span>Expense Tracker</span>
+                <span>Personal finance, kept simple.</span>
+            </div>
+        </footer>
+    {% endif %}
 
     <script src="{% static 'vendor/bootstrap/bootstrap.bundle.min.js' %}"></script>
     <script src="{% static 'js/toasts.js' %}"></script>

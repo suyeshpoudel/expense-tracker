@@ -5,17 +5,24 @@
         return;
     }
 
+    var fontFamily = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+    var reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    Chart.defaults.font.family = fontFamily;
+    Chart.defaults.color = "#69736e";
+    Chart.defaults.borderColor = "#e5e8e3";
+
     var palette = [
-        "#146c43",
-        "#198754",
-        "#20c997",
-        "#0d6efd",
-        "#6f42c1",
-        "#fd7e14",
-        "#dc3545",
-        "#6c757d",
-        "#0dcaf0",
-        "#ffc107"
+        "#0e6b4b",
+        "#3d8a69",
+        "#6aa88c",
+        "#94c1ab",
+        "#b9d3c5",
+        "#ccd6d0",
+        "#aeb8b1",
+        "#8f9a93",
+        "#d8ddd9",
+        "#e4e7e3"
     ];
 
     function readData(elementId) {
@@ -38,6 +45,23 @@
         });
     }
 
+    var tooltipStyles = {
+        backgroundColor: "#18211d",
+        titleColor: "#f4f6f4",
+        bodyColor: "#d9dfdb",
+        borderColor: "rgba(255, 255, 255, 0.08)",
+        borderWidth: 1,
+        padding: 12,
+        cornerRadius: 8,
+        titleFont: {
+            weight: "600",
+            size: 12
+        },
+        bodyFont: {
+            size: 12
+        }
+    };
+
     function buildTrendChart() {
         var canvas = document.getElementById("monthly-trend-chart");
         var data = readData("monthly-trend-data");
@@ -53,20 +77,31 @@
                     {
                         label: "Expenses",
                         data: data.values,
-                        backgroundColor: "#146c43",
-                        borderRadius: 4,
-                        maxBarThickness: 42
+                        backgroundColor: "#0e6b4b",
+                        hoverBackgroundColor: "#0a573c",
+                        borderRadius: 6,
+                        borderSkipped: false,
+                        maxBarThickness: 34,
+                        categoryPercentage: 0.72,
+                        barPercentage: 0.86
                     }
                 ]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                animation: reducedMotion ? false : { duration: 500 },
+                interaction: {
+                    intersect: false,
+                    mode: "index"
+                },
                 plugins: {
                     legend: {
                         display: false
                     },
                     tooltip: {
+                        ...tooltipStyles,
+                        displayColors: false,
                         callbacks: {
                             label: function (context) {
                                 return formatAmount(data.currency, context.parsed.y);
@@ -77,14 +112,38 @@
                 scales: {
                     x: {
                         grid: {
+                            display: false,
+                            drawBorder: false
+                        },
+                        border: {
                             display: false
+                        },
+                        ticks: {
+                            color: "#69726c",
+                            font: {
+                                size: 11
+                            },
+                            maxRotation: 0
                         }
                     },
                     y: {
                         beginAtZero: true,
+                        border: {
+                            display: false
+                        },
+                        grid: {
+                            color: "#eef0ec",
+                            drawTicks: false
+                        },
                         ticks: {
+                            color: "#69726c",
+                            font: {
+                                size: 11
+                            },
+                            maxTicksLimit: 5,
+                            padding: 8,
                             callback: function (value) {
-                                return data.currency + " " + Number(value).toLocaleString();
+                                return Number(value).toLocaleString();
                             }
                         }
                     }
@@ -101,10 +160,7 @@
         }
 
         var colors = data.labels.map(function (label, index) {
-            if (index < palette.length) {
-                return palette[index];
-            }
-            return "hsl(" + ((index * 47) % 360) + " 55% 45%)";
+            return palette[index % palette.length];
         });
 
         new Chart(canvas, {
@@ -115,28 +171,27 @@
                     {
                         data: data.values,
                         backgroundColor: colors,
+                        hoverBackgroundColor: colors,
                         borderColor: "#ffffff",
-                        borderWidth: 2
+                        borderWidth: 3,
+                        hoverOffset: 4
                     }
                 ]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                cutout: "58%",
+                animation: reducedMotion ? false : { duration: 500 },
+                cutout: "66%",
                 plugins: {
                     legend: {
-                        position: "bottom",
-                        labels: {
-                            boxWidth: 12,
-                            padding: 12,
-                            usePointStyle: true
-                        }
+                        display: false
                     },
                     tooltip: {
+                        ...tooltipStyles,
                         callbacks: {
                             label: function (context) {
-                                return context.label + ": " + formatAmount(data.currency, context.parsed);
+                                return context.label + " · " + formatAmount(data.currency, context.parsed);
                             }
                         }
                     }

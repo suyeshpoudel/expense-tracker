@@ -2,97 +2,108 @@
 {% load static %}
 
 {% block title %}Reports · Expense Tracker{% endblock %}
+{% block topbar_label %}Reports{% endblock %}
 
 {% block content %}
-<div class="mb-4">
-    <h1 class="h3 mb-1">Reports</h1>
-    <p class="app-muted mb-0">Review spending and cash flow over any date range. Both dates are included.</p>
+<div class="page-header">
+    <div class="page-heading">
+        <p class="page-eyebrow">Insights</p>
+        <h1 class="page-title">Reports</h1>
+        <p class="page-subtitle">Review spending and cash flow over any date range. Both dates are included.</p>
+    </div>
 </div>
 
-<nav class="d-flex flex-wrap align-items-center gap-2 mb-3" aria-label="Quick date ranges">
-    <span class="small app-muted">Quick ranges:</span>
-    {% for preset in report_presets %}
-        <a class="btn btn-sm {% if show_report and preset.date_from == date_from and preset.date_to == date_to %}btn-success{% else %}btn-outline-secondary{% endif %}"
-           href="?date_from={{ preset.date_from|date:'Y-m-d' }}&amp;date_to={{ preset.date_to|date:'Y-m-d' }}"
-           {% if show_report and preset.date_from == date_from and preset.date_to == date_to %}aria-current="true"{% endif %}>
-            {{ preset.label }}
-        </a>
-    {% endfor %}
-</nav>
+<section class="filter-panel">
+    <div class="filter-panel-body">
+        <nav class="preset-row" aria-label="Quick date ranges">
+            <span class="preset-label">Quick ranges:</span>
+            {% for preset in report_presets %}
+                <a class="chip"
+                   href="?date_from={{ preset.date_from|date:'Y-m-d' }}&amp;date_to={{ preset.date_to|date:'Y-m-d' }}"
+                   {% if show_report and preset.date_from == date_from and preset.date_to == date_to %}aria-current="true"{% endif %}>
+                    {{ preset.label }}
+                </a>
+            {% endfor %}
+        </nav>
 
-<form method="get" class="card app-card mb-4" aria-label="Report date range" novalidate>
-    <div class="card-body">
-        {% if form.non_field_errors %}
-            <div class="alert alert-danger" role="alert">
-                {{ form.non_field_errors }}
-            </div>
-        {% endif %}
+        <form method="get" class="date-range-form" aria-label="Report date range" novalidate>
+            {% if form.non_field_errors %}
+                <div class="alert alert--danger w-100" role="alert">{{ form.non_field_errors }}</div>
+            {% endif %}
 
-        <div class="row g-3 align-items-start">
-            <div class="col-sm-6 col-lg-3">
-                <label class="form-label" for="{{ form.date_from.id_for_label }}">{{ form.date_from.label }}</label>
+            <div class="field{% if form.date_from.errors %} field--error{% endif %}">
+                <label class="field-label" for="{{ form.date_from.id_for_label }}">{{ form.date_from.label }}</label>
                 {{ form.date_from }}
                 {% for error in form.date_from.errors %}
-                    <div class="invalid-feedback d-block">{{ error }}</div>
+                    <p class="field-error">{{ error }}</p>
                 {% endfor %}
             </div>
-            <div class="col-sm-6 col-lg-3">
-                <label class="form-label" for="{{ form.date_to.id_for_label }}">{{ form.date_to.label }}</label>
+
+            <span class="date-range-separator" aria-hidden="true">to</span>
+
+            <div class="field{% if form.date_to.errors %} field--error{% endif %}">
+                <label class="field-label" for="{{ form.date_to.id_for_label }}">{{ form.date_to.label }}</label>
                 {{ form.date_to }}
                 {% for error in form.date_to.errors %}
-                    <div class="invalid-feedback d-block">{{ error }}</div>
+                    <p class="field-error">{{ error }}</p>
                 {% endfor %}
             </div>
-            <div class="col-lg-6 d-flex align-items-end gap-2">
-                <button class="btn btn-success" type="submit">Apply filters</button>
+
+            <div class="filter-buttons">
+                <button class="button button--primary" type="submit">Apply filters</button>
                 {% if form.is_bound %}
-                    <a class="btn btn-outline-secondary" href="{% url 'core:reports' %}">Reset</a>
+                    <a class="button button--ghost" href="{% url 'core:reports' %}">Reset</a>
                 {% endif %}
             </div>
-        </div>
+        </form>
     </div>
-</form>
+</section>
 
 {% if show_report %}
-    <div class="row g-3 mb-4">
-        <div class="col-md-4">
-            <div class="card h-100 app-card">
-                <div class="card-body">
-                    <p class="small text-uppercase app-muted mb-1">Expenses</p>
-                    <p class="h3 mb-1 text-danger">{{ CURRENCY_CODE }} {{ total_expenses|floatformat:2 }}</p>
-                    <p class="small app-muted mb-0">{{ period_label }}</p>
-                </div>
-            </div>
+    <section class="summary-band summary-band--three" aria-label="Report totals">
+        <div class="summary-cell">
+            <p class="summary-label">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                    <path d="M7 17 17 7"></path>
+                    <path d="M9 7h8v8"></path>
+                </svg>
+                Expenses
+            </p>
+            <p class="summary-value money">{{ CURRENCY_CODE }} {{ total_expenses|floatformat:2 }}</p>
+            <p class="summary-meta">{{ period_label }}</p>
         </div>
-        <div class="col-md-4">
-            <div class="card h-100 app-card">
-                <div class="card-body">
-                    <p class="small text-uppercase app-muted mb-1">Income</p>
-                    <p class="h3 mb-1 text-success">{{ CURRENCY_CODE }} {{ total_income|floatformat:2 }}</p>
-                    <p class="small app-muted mb-0">{{ period_label }}</p>
-                </div>
-            </div>
+        <div class="summary-cell">
+            <p class="summary-label">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                    <path d="M17 7 7 17"></path>
+                    <path d="M15 17H7V9"></path>
+                </svg>
+                Income
+            </p>
+            <p class="summary-value summary-value--income money">{{ CURRENCY_CODE }} {{ total_income|floatformat:2 }}</p>
+            <p class="summary-meta">{{ period_label }}</p>
         </div>
-        <div class="col-md-4">
-            <div class="card h-100 app-card">
-                <div class="card-body">
-                    <p class="small text-uppercase app-muted mb-1">Net cash flow</p>
-                    <p class="h3 mb-1 {% if net_total < 0 %}text-danger{% elif net_total > 0 %}text-success{% endif %}">
-                        {{ CURRENCY_CODE }} {{ net_total|floatformat:2 }}
-                    </p>
-                    <p class="small app-muted mb-0">{{ period_label }}</p>
-                </div>
-            </div>
+        <div class="summary-cell">
+            <p class="summary-label">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                    <path d="M4 12h16"></path>
+                    <path d="m15 7 5 5-5 5"></path>
+                </svg>
+                Net cash flow
+            </p>
+            <p class="summary-value money{% if net_total < 0 %} summary-value--negative{% elif net_total > 0 %} summary-value--positive{% endif %}">
+                {{ CURRENCY_CODE }} {{ net_total|floatformat:2 }}
+            </p>
+            <p class="summary-meta">Income minus expenses</p>
         </div>
-    </div>
+    </section>
 
-    <div class="row g-3">
-        <div class="col-lg-5">
-            {% include "includes/category_breakdown_card.html" %}
-        </div>
-        <div class="col-lg-7">
-            {% include "includes/trend_card.html" %}
-        </div>
+    <div class="analytics-grid">
+        {% include "includes/trend_card.html" %}
+        {% include "includes/category_breakdown_card.html" %}
     </div>
 {% endif %}
 {% endblock %}
